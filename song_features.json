@@ -1,0 +1,62 @@
+{
+  "song-1.mp3": {
+    "duration": 48.02401360544218,
+    "sample_rate": 44100,
+    "num_channels": 1,
+    "sample_width": 2,
+    "mean_amplitude": 6626.9008550616445,
+    "max_amplitude": 26398.0,
+    "std_amplitude": 8360.16342959715,
+    "peak_frequency": 0.0015798974341540205,
+    "energy": 76585952.0,
+    "zero_crossings": 22829,
+    "rms": 6.013482288493383,
+    "crest_factor": 4389.802569222125,
+    "frequency_bands": {
+      "bass": 429465038698.1986,
+      "mid": 0.0,
+      "treble": 0.0,
+      "high": 0.0
+    }
+  },
+  "song-2.mp3": {
+    "duration": 9.768004535147393,
+    "sample_rate": 44100,
+    "num_channels": 1,
+    "sample_width": 2,
+    "mean_amplitude": 2501.9779023095907,
+    "max_amplitude": 13140.0,
+    "std_amplitude": 3156.6259443018107,
+    "peak_frequency": 0.002732322892315835,
+    "energy": 89263249.0,
+    "zero_crossings": 5931,
+    "rms": 14.395081368890647,
+    "crest_factor": 912.8117905882063,
+    "frequency_bands": {
+      "bass": 55976494099.309135,
+      "mid": 0.0,
+      "treble": 0.0,
+      "high": 0.0
+    }
+  },
+  "song-3.mp3": {
+    "duration": 16.744489795918366,
+    "sample_rate": 44100,
+    "num_channels": 1,
+    "sample_width": 2,
+    "mean_amplitude": 2004.2177113126193,
+    "max_amplitude": 11410.0,
+    "std_amplitude": 2573.78835140361,
+    "peak_frequency": 0.006657349627318426,
+    "energy": 245383379.0,
+    "zero_crossings": 12762,
+    "rms": 18.229187708924783,
+    "crest_factor": 625.9192774900116,
+    "frequency_bands": {
+      "bass": 99319584152.38345,
+      "mid": 0.0,
+      "treble": 0.0,
+      "high": 0.0
+    }
+  }
+}

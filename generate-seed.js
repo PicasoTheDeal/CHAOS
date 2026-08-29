@@ -1,0 +1,143 @@
+const fs = require('fs');
+const crypto = require('crypto');
+
+function sha512(message) {
+  return crypto.createHash('sha512').update(message).digest('hex');
+}
+
+function generateRandomPool() {
+  let pool = '';
+  for (let i = 0; i < 256; i++) {
+    pool += Math.floor(Math.random() * 10);
+  }
+  return pool;
+}
+
+function getPiDigits(startPos, count) {
+  const pi = '31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679' +
+    '8214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196' +
+    '4428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273' +
+    '7245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094' +
+    '3305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912' +
+    '9833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132' +
+    '0005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235' +
+    '4201995611212902196086403441815981362977477130996051870721134999999837297804995105973173281609631859' +
+    '5024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303' +
+    '5982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989' +
+    '3809525720106548586327886593615338182796823030195203530185296899577362259941389124972177528347913151' +
+    '5574857242454150695950829533116861727855889075098381754637464939319255060400927701671139009848824012' +
+    '8583616035637076601047101819429555961989467678374494482553797747268471040475346462080466842590694912' +
+    '9331367702898915210475216205696602405803815019351125338243003558764024749647326391419927260426992279' +
+    '6782354781636009341721641219924586315030286182974555706749838505494588586926995690927210797509302955' +
+    '3211653449872027559602364806654991198818347977535663698074265425278625518184175746728909777727938000' +
+    '8164706001614524919217321721477235014144197356854816136115735255213347574184946843852332390739414333' +
+    '4547762416862518983569485562099219222184272550254256887671790494601653466804988627232791786085784383' +
+    '8279679766814541009538837863609506800642251252051173929848960841284886269456042419652850222106611863' +
+    '0674427862203919494504712371378696095636437191728746776465757396241389086583264599581339047802759009' +
+    '9465764078951269468398352595709825822620522489407726719478268482601476990902640136394437455305068203' +
+    '4962524517493996514314298091906592509372216964615157098583874105978595959772975498930161753928468138' +
+    '2686838689427741559918559252459539594310499725246808459872736446958486538367362226260991246080512438' +
+    '8439045124413654976278079771569143599770012961608944169486855584840635342207222582848864815845602850' +
+    '6016842739452267467678895252138522549954666727823986456596116354886230577456498035593634568174324112' +
+    '5150760694794510965960940252288797108931456691368672287489405601015033086179286809208747609178249385' +
+    '8900971490967598526136554978189312978482168299894872265880485756401427047755513237964145152374623436' +
+    '4542858444795265867821051141354735739523113427166102135969536231442952484937187110145765403590279934' +
+    '4037420073105785390621983874478084784896833214457138687519435064302184531910484810053706146806749192' +
+    '7819119793995206141966342875444064374512371819217999839101591956181467514269123974894090718649423196' +
+    '156794528095189255409512522922753060138214714730093' +
+    '6540580000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+  let result = '';
+  for (let i = 0; i < count; i++) {
+    const pos = (startPos + i) % pi.length;
+    result += pi[pos];
+  }
+  return result;
+}
+
+async function generateDailySeed(visitorCount) {
+  const randomPool = generateRandomPool();
+  const timestamp = Date.now();
+  const combined = randomPool + visitorCount + timestamp;
+  const hash = sha512(combined);
+  const piPosition = BigInt('0x' + hash.slice(0, 12)) % 1000000000000n;
+  const piDigits = getPiDigits(Number(piPosition), 128);
+
+  const seeds = [];
+  for (let i = 0; i < 8; i++) {
+    seeds.push(BigInt(piDigits.slice(i * 16, (i + 1) * 16)));
+  }
+
+  let product = 1n;
+  for (const seed of seeds) {
+    product = (product * seed) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFn;
+  }
+
+  let sum = 0n;
+  for (const seed of seeds) {
+    sum += seed;
+  }
+
+  const finalSeed = (product ^ sum) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFn;
+  return finalSeed.toString(16).padStart(128, '0');
+}
+
+async function main() {
+  try {
+    let html = fs.readFileSync('index.html', 'utf8');
+    let visitorCount = Math.floor(Math.random() * 100000) + 1;
+    
+    console.log('Generating seed with visitor count: ' + visitorCount);
+    
+    const seed = await generateDailySeed(visitorCount);
+    const seedHash = crypto.createHash('sha256').update(seed).digest('hex');
+    
+    const newBaseSeed = seed.slice(0, 32);
+    html = html.replace(/const BASE_SEED = '([^']+)';/, 'const BASE_SEED = \'' + newBaseSeed + '\';');
+    console.log('Updated BASE_SEED to: ' + newBaseSeed);
+    
+    let songFeatures = {};
+    try {
+      const featuresData = fs.readFileSync('song_features.json', 'utf8');
+      songFeatures = JSON.parse(featuresData);
+      console.log('Loaded song features for ' + Object.keys(songFeatures).length + ' songs');
+    } catch (e) {
+      console.log('No song_features.json found, using default features');
+      songFeatures = {
+        'song-1.mp3': { duration: 30, mean_amplitude: 0.5, peak_frequency: 440, frequency_bands: { bass: 100, mid: 200, treble: 50 } },
+        'song-2.mp3': { duration: 30, mean_amplitude: 0.6, peak_frequency: 880, frequency_bands: { bass: 80, mid: 300, treble: 70 } },
+        'song-3.mp3': { duration: 30, mean_amplitude: 0.4, peak_frequency: 220, frequency_bands: { bass: 150, mid: 100, treble: 30 } }
+      };
+    }
+    
+    const featuresString = JSON.stringify(songFeatures);
+    const featuresBase64 = Buffer.from(featuresString).toString('base64');
+    
+    html = html.replace(/const SONG_FEATURES = '';/, 'const SONG_FEATURES = \'' + featuresBase64 + '\';');
+    console.log('Injected song features (' + (featuresBase64.length / 1024).toFixed(1) + ' KB base64)');
+    
+    fs.writeFileSync('index.html', html);
+    
+    const seedData = {
+      seed: seed,
+      generatedAt: new Date().toISOString(),
+      visitorCount: visitorCount,
+      seedHash: seedHash,
+      preview: seed.slice(0, 32) + '...',
+      songCount: Object.keys(songFeatures).length
+    };
+    
+    fs.writeFileSync('daily-seed.json', JSON.stringify(seedData, null, 2));
+    
+    console.log('\nDaily seed generated and injected successfully!');
+    console.log('Seed: ' + seed.slice(0, 32) + '...');
+    console.log('Songs analyzed: ' + Object.keys(songFeatures).length);
+    console.log('HTML size: ' + (fs.statSync('index.html').size / 1024).toFixed(1) + ' KB');
+    
+  } catch (error) {
+    console.error('Error generating seed:', error);
+    process.exit(1);
+  }
+}
+
+main();
