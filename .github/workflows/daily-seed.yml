@@ -1,42 +1,38 @@
-# .github/workflows/daily-seed.yml
-
-name: Generate Daily Chaos Seed
+name: Generate and Deploy Daily Seed
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Run at midnight UTC every day
-  workflow_dispatch:  # Allow manual trigger
-
-permissions:
-  contents: write
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
-  generate-seed:
+  deploy:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Generate seed and update HTML
-        run: |
-          node generate-seed.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node generate-seed.js
 
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add index.html daily-seed.json
-          git commit -m "Update daily seed [skip ci]" || echo "No changes to commit"
-          git push
+      - name: Commit and push daily seed updates
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: index.html daily-seed.json
+          commit_message: "chore: update daily seed and index [skip ci]"
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy . --project-name=controlled-chaos --branch=main --commit-dirty=true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
