@@ -316,7 +316,6 @@
 
         const seedDisplay = document.getElementById('seed-display');
 
-        // Dynamically slice seed for mobile screens, full seed for desktop
         function updateSeedDisplay() {
             if (window.innerWidth <= 600) {
                 seedDisplay.textContent = 'seed: ' + SEED_RAW.slice(0, 14) + '...' + SEED_RAW.slice(-6);
