@@ -118,7 +118,7 @@ async function main() {
       generatedAt: new Date().toISOString(),
       visitorFactor: visitorCount,
       seedHash: seedHash,
-      preview: seed.slice(0, 32) + '...'
+      preview: seed
     };
     
     fs.writeFileSync('daily-seed.json', JSON.stringify(seedData, null, 2));
