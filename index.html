@@ -88,54 +88,12 @@
             user-select: none;
             backdrop-filter: blur(2px);
         }
-        #controls {
-            position: fixed;
-            bottom: 1.2em;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 99;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        #mute-btn, #play-btn {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.6);
-            padding: 0.4em 1em;
-            border: var(--border-width) solid rgba(255, 255, 255, 0.1);
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            user-select: none;
-            backdrop-filter: blur(2px);
-            transition: all 0.3s ease;
-            border-radius: 4px;
-        }
-        #mute-btn:hover, #play-btn:hover {
-            color: rgba(255, 255, 255, 0.7);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        #play-btn {
-            color: rgba(63, 185, 80, 0.5);
-            border-color: rgba(63, 185, 80, 0.15);
-        }
-        #play-btn:hover {
-            color: rgba(63, 185, 80, 0.9);
-            border-color: rgba(63, 185, 80, 0.3);
-        }
-        #mute-btn.active {
-            color: #3fb950;
-            border-color: rgba(63, 185, 80, 0.3);
-        }
         ::-webkit-scrollbar {
             display: none;
         }
         @media (max-width: 600px) {
             #seed-display,
-            #visitor-count,
-            #mute-btn,
-            #play-btn {
+            #visitor-count {
                 font-size: 0.4rem;
                 padding: 0.2em 0.5em;
                 bottom: 0.8em;
@@ -145,10 +103,6 @@
             }
             #seed-display {
                 right: 0.8em;
-            }
-            #controls {
-                bottom: 2.8em;
-                gap: 6px;
             }
         }
 
@@ -253,22 +207,18 @@
         <div id="canvas-container"></div>
         <div id="seed-display">seed: —</div>
         <div id="visitor-count">visitors: —</div>
-        <div id="controls">
-            <button type="button" id="play-btn">PLAY</button>
-            <button type="button" id="mute-btn">muted</button>
-        </div>
     </div>
 
     <div id="plymouth">
-        <div id="plymouth-logo"> CHAOS <span> v ∞ </span></div>
+        <div id="plymouth-logo">CHAOS <span>v ∞</span></div>
         <div id="plymouth-lines">
-            <div class="boot-line" style="animation-delay:0.9s;">[  INITIALIZING ENTROPY POOL  ]</div>
-            <div class="boot-line" style="animation-delay:1.3s;">[  GENERATING 256-DIGIT SEED  ]</div>
-            <div class="boot-line" style="animation-delay:1.7s;">[  EXTRACTING FROM Pi  ]</div>
-            <div class="boot-line" style="animation-delay:2.1s;">[  SHA-512 HASHING  ]</div>
-            <div class="boot-line success" style="animation-delay:2.5s;">[  SEED GENERATED  ]</div>
-            <div class="boot-line accent" style="animation-delay:2.9s;">[  VISUAL ENGINE STARTING  ]</div>
-            <div class="boot-line dim" style="animation-delay:3.3s;">[  SYSTEM READY  ] <span class="cursor"></span></div>
+            <div class="boot-line" style="animation-delay:0.9s;">[ INITIALIZING ENTROPY POOL ]</div>
+            <div class="boot-line" style="animation-delay:1.3s;">[ GENERATING 256-DIGIT SEED ]</div>
+            <div class="boot-line" style="animation-delay:1.7s;">[ EXTRACTING FROM Pi ]</div>
+            <div class="boot-line" style="animation-delay:2.1s;">[ SHA-512 HASHING ]</div>
+            <div class="boot-line success" style="animation-delay:2.5s;">[ SEED GENERATED ]</div>
+            <div class="boot-line accent" style="animation-delay:2.9s;">[ VISUAL ENGINE STARTING ]</div>
+            <div class="boot-line dim" style="animation-delay:3.3s;">[ SYSTEM READY ] <span class="cursor"></span></div>
         </div>
         <div id="plymouth-progress">
             <div id="plymouth-progress-bar"></div>
@@ -293,557 +243,7 @@
         import { FilmPass } from "three/addons/postprocessing/FilmPass.js";
         import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-
-        const SONG_FEATURES = 'eyJzb25nLTEubXAzIjp7ImR1cmF0aW9uIjo0OC4wMjQwMTM2MDU0NDIxOCwic2FtcGxlX3JhdGUiOjQ0MTAwLCJudW1fY2hhbm5lbHMiOjEsInNhbXBsZV93aWR0aCI6MiwibWVhbl9hbXBsaXR1ZGUiOjY2MjYuOTAwODU1MDYxNjQ0NSwibWF4X2FtcGxpdHVkZSI6MjYzOTgsInN0ZF9hbXBsaXR1ZGUiOjgzNjAuMTYzNDI5NTk3MTUsInBlYWtfZnJlcXVlbmN5IjowLjAwMTU3OTg5NzQzNDE1NDAyMDUsImVuZXJneSI6NzY1ODU5NTIsInplcm9fY3Jvc3NpbmdzIjoyMjgyOSwicm1zIjo2LjAxMzQ4MjI4ODQ5MzM4MywiY3Jlc3RfZmFjdG9yIjo0Mzg5LjgwMjU2OTIyMjEyNSwiZnJlcXVlbmN5X2JhbmRzIjp7ImJhc3MiOjQyOTQ2NTAzODY5OC4xOTg2LCJtaWQiOjAsInRyZWJsZSI6MCwiaGlnaCI6MH19LCJzb25nLTIubXAzIjp7ImR1cmF0aW9uIjo5Ljc2ODAwNDUzNTE0NzM5Mywic2FtcGxlX3JhdGUiOjQ0MTAwLCJudW1fY2hhbm5lbHMiOjEsInNhbXBsZV93aWR0aCI6MiwibWVhbl9hbXBsaXR1ZGUiOjI1MDEuOTc3OTAyMzA5NTkwNywibWF4X2FtcGxpdHVkZSI6MTMxNDAsInN0ZF9hbXBsaXR1ZGUiOjMxNTYuNjI1OTQ0MzAxODEwNywicGVha19mcmVxdWVuY3kiOjAuMDAyNzMyMzIyODkyMzE1ODM1LCJlbmVyZ3kiOjg5MjYzMjQ5LCJ6ZXJvX2Nyb3NzaW5ncyI6NTkzMSwicm1zIjoxNC4zOTUwODEzNjg4OTA2NDcsImNyZXN0X2ZhY3RvciI6OTEyLjgxMTc5MDU4ODIwNjMsImZyZXF1ZW5jeV9iYW5kcyI6eyJiYXNzIjo1NTk3NjQ5NDA5OS4zMDkxMzUsIm1pZCI6MCwidHJlYmxlIjowLCJoaWdoIjowfX0sInNvbmctMy5tcDMiOnsiZHVyYXRpb24iOjE2Ljc0NDQ4OTc5NTkxODM2Niwic2FtcGxlX3JhdGUiOjQ0MTAwLCJudW1fY2hhbm5lbHMiOjEsInNhbXBsZV93aWR0aCI6MiwibWVhbl9hbXBsaXR1ZGUiOjIwMDQuMjE3NzExMzEyNjE5MywibWF4X2FtcGxpdHVkZSI6MTE0MTAsInN0ZF9hbXBsaXR1ZGUiOjI1NzMuNzg4MzUxNDAzNjEsInBlYWtfZnJlcXVlbmN5IjowLjAwNjY1NzM0OTYyNzMxODQyNiwiZW5lcmd5IjoyNDUzODMzNzksInplcm9fY3Jvc3NpbmdzIjoxMjc2Miwicm1zIjoxOC4yMjkxODc3MDg5MjQ3ODMsImNyZXN0X2ZhY3RvciI6NjI1LjkxOTI3NzQ5MDAxMTYsImZyZXF1ZW5jeV9iYW5kcyI6eyJiYXNzIjo5OTMxOTU4NDE1Mi4zODM0NSwibWlkIjowLCJ0cmVibGUiOjAsImhpZ2giOjB9fX0=';
-
-        function decodeSongFeatures(encoded) {
-            try {
-                const decoded = atob(encoded);
-                return JSON.parse(decoded);
-            } catch (e) {
-                return {};
-            }
-        }
-
-        function mutateSongWithSeed(features, seed, index) {
-            const seedOffset = Number((seed + BigInt(index * 999)) % 1000n);
-            const mutated = { ...features };
-
-            if (features.mean_amplitude) {
-                mutated.mean_amplitude = features.mean_amplitude * (0.5 + (seedOffset % 100) / 100);
-            }
-            if (features.peak_frequency) {
-                mutated.peak_frequency = features.peak_frequency * (0.7 + (seedOffset % 60) / 100);
-            }
-            if (features.duration) {
-                mutated.duration = features.duration * (0.8 + (seedOffset % 40) / 100);
-            }
-
-            if (features.frequency_bands) {
-                const bands = { ...features.frequency_bands };
-                for (const [key, value] of Object.entries(bands)) {
-                    bands[key] = value * (0.6 + ((seedOffset + key.length * 7) % 80) / 100);
-                }
-                mutated.frequency_bands = bands;
-            }
-
-            return mutated;
-        }
-
-        function generateAmbientFromFeatures(features, seed, index) {
-            if (!audioCtx) return null;
-            try {
-                const mutated = mutateSongWithSeed(features, seed, index);
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                const panner = audioCtx.createPanner();
-                const convolver = audioCtx.createConvolver();
-
-                let baseFreq = 180 + (index * 40) + Number(seed % 40n);
-                if (mutated.peak_frequency && mutated.peak_frequency > 0) {
-                    baseFreq = 60 + (mutated.peak_frequency * 100000) % 300 + (index * 25);
-                }
-                if (baseFreq < 50) baseFreq = 180 + (index * 40);
-
-                const types = ['sine', 'sine', 'triangle', 'sine'];
-                osc.type = types[index % 4];
-                osc.frequency.value = baseFreq;
-
-                const osc2 = audioCtx.createOscillator();
-                osc2.type = 'sine';
-                osc2.frequency.value = baseFreq * 1.5;
-                const gain2 = audioCtx.createGain();
-                gain2.gain.value = 0.08;
-
-                const vol = 0.05 + (mutated.mean_amplitude || 3276.8) / 60000;
-                gain.gain.value = Math.min(0.2, vol);
-
-                osc2.connect(gain2);
-                gain2.connect(panner);
-
-                const lfo = audioCtx.createOscillator();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.05 + (index * 0.03);
-                const lfoGain = audioCtx.createGain();
-                lfoGain.gain.value = baseFreq * 0.05;
-                lfo.connect(lfoGain);
-                lfoGain.connect(osc.frequency);
-                lfo.start();
-
-                const lfo2 = audioCtx.createOscillator();
-                lfo2.type = 'triangle';
-                lfo2.frequency.value = 0.03 + (index * 0.02);
-                const lfoGain2 = audioCtx.createGain();
-                lfoGain2.gain.value = 0.1;
-                lfo2.connect(lfoGain2);
-                lfoGain2.connect(gain.gain);
-                lfo2.start();
-
-                panner.distanceModel = 'inverse';
-                panner.refDistance = 1;
-                panner.maxDistance = 25;
-                panner.rolloffFactor = 0.4;
-
-                convolver.buffer = createEchoImpulse(0.4 + index * 0.06);
-
-                osc.connect(gain);
-                gain.connect(panner);
-                panner.connect(convolver);
-                convolver.connect(masterGain);
-                osc.start();
-                osc2.start();
-
-                return { osc, gain, panner, lfo, osc2, gain2, lfo2, convolver };
-            } catch (e) {
-                console.log('Ambient generation failed:', e);
-                return null;
-            }
-        }
-
-        function createEchoImpulse(delay) {
-            const sampleRate = audioCtx.sampleRate;
-            const length = sampleRate * 1.5;
-            const impulse = audioCtx.createBuffer(2, length, sampleRate);
-            const left = impulse.getChannelData(0);
-            const right = impulse.getChannelData(1);
-            
-            for (let i = 0; i < length; i++) {
-                const t = i / sampleRate;
-                const decay = Math.exp(-t * 1.5);
-                const value = (Math.random() * 2 - 1) * decay * 0.15;
-                left[i] = value;
-                right[i] = value * 0.7;
-            }
-            
-            return impulse;
-        }
-
-        let audioCtx = null;
-        let isMuted = true;
-        let soundNodes = [];
-        let listener = null;
-        let masterGain = null;
-        let songPlayers = [];
-        let audioInitialized = false;
-        let audioReady = false;
-
-        function initAudio() {
-            if (audioCtx) return;
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                listener = audioCtx.listener;
-                if (listener) {
-                    try {
-                        if (listener.positionX !== undefined) {
-                            listener.positionX.value = 0;
-                            listener.positionY.value = 0;
-                            listener.positionZ.value = 0;
-                        } else if (listener.setPosition) {
-                            listener.setPosition(0, 0, 0);
-                        }
-                    } catch (e) {}
-                }
-            } catch (e) {
-                console.log('Audio not supported');
-                return;
-            }
-            isMuted = false;
-            document.getElementById('mute-btn').textContent = 'unmuted';
-
-            masterGain = audioCtx.createGain();
-            masterGain.gain.value = 0.6;
-            masterGain.connect(audioCtx.destination);
-
-            if (audioReady) {
-                createObjectSounds();
-                loadAndPlaySongs();
-            }
-
-            setTimeout(() => playTestTone(), 100);
-            audioInitialized = true;
-            console.log('Audio initialized! State:', audioCtx.state);
-        }
-
-        function toggleMute() {
-            if (!audioCtx) {
-                initAudio();
-                return;
-            }
-            isMuted = !isMuted;
-            document.getElementById('mute-btn').textContent = isMuted ? 'muted' : 'unmuted';
-            if (isMuted) {
-                if (masterGain) masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                soundNodes.forEach(node => {
-                    if (node.gain) node.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                });
-                songPlayers.forEach(p => {
-                    if (p.gain) p.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                });
-            } else {
-                if (masterGain) masterGain.gain.setTargetAtTime(0.6, audioCtx.currentTime, 0.3);
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                soundNodes.forEach(node => {
-                    if (node.gain) node.gain.setTargetAtTime(node.volume || 0.08, audioCtx.currentTime, 0.3);
-                });
-                songPlayers.forEach(p => {
-                    if (p.gain) p.gain.setTargetAtTime(p.baseVolume || 0.08, audioCtx.currentTime, 0.3);
-                });
-                playTestTone();
-            }
-        }
-
-        function playTestTone() {
-            if (!audioCtx || isMuted) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.4);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.5);
-            } catch (e) {}
-        }
-
-        function createObjectSound(obj, index, size, objType) {
-            if (!audioCtx) return null;
-            try {
-                const seedOffset = Number((seed64 + BigInt(index * 137 + objType * 999)) % 1000n);
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                const panner = audioCtx.createPanner();
-                const convolver = audioCtx.createConvolver();
-                
-                const baseFreq = 60 + (seedOffset % 200) * (0.3 + (index * 0.05));
-                const sizeScale = Math.max(0.3, Math.min(2.0, size * 1.5));
-                const freq = Number(baseFreq) / sizeScale;
-
-                const type = ['sine', 'sine', 'sine', 'triangle', 'sine', 'sawtooth'][seedOffset % 6];
-                osc.type = type;
-                osc.frequency.value = Math.max(30, freq);
-
-                const detuneMod = (seedOffset % 40) - 20;
-                osc.detune.value = Number(detuneMod) * 0.5;
-
-                const lfo = audioCtx.createOscillator();
-                lfo.type = ['sine', 'sine', 'triangle'][seedOffset % 3];
-                lfo.frequency.value = (0.02 + (seedOffset % 30) * 0.003) / sizeScale;
-                const lfoGain = audioCtx.createGain();
-                lfoGain.gain.value = (2 + (seedOffset % 20) * 0.2) * sizeScale;
-                lfo.connect(lfoGain);
-                lfoGain.connect(osc.frequency);
-                lfo.start();
-
-                const lfo2 = audioCtx.createOscillator();
-                lfo2.type = 'sine';
-                lfo2.frequency.value = 0.01 + (seedOffset % 20) * 0.002;
-                const lfoGain2 = audioCtx.createGain();
-                lfoGain2.gain.value = 0.3 + (seedOffset % 30) * 0.01;
-                lfo2.connect(lfoGain2);
-                lfoGain2.connect(gain.gain);
-                lfo2.start();
-
-                const volume = 0.02 + (seedOffset % 80) * 0.003 * sizeScale;
-
-                gain.gain.value = 0.001;
-                gain.gain.setTargetAtTime(volume, audioCtx.currentTime + 0.5, 0.5);
-
-                panner.distanceModel = 'inverse';
-                panner.refDistance = 0.5;
-                panner.maxDistance = 30;
-                panner.rolloffFactor = 0.3 + (seedOffset % 20) * 0.01;
-
-                convolver.buffer = createEchoImpulse(0.3 + (seedOffset % 40) * 0.015);
-
-                osc.connect(gain);
-                gain.connect(panner);
-                panner.connect(convolver);
-                convolver.connect(masterGain);
-                osc.start();
-
-                const node = {
-                    osc: osc,
-                    gain: gain,
-                    panner: panner,
-                    lfo: lfo,
-                    lfo2: lfo2,
-                    convolver: convolver,
-                    volume: volume,
-                    index: index,
-                    size: size,
-                    objType: objType,
-                    position: { x: 0, y: 0, z: 0 }
-                };
-
-                return node;
-
-            } catch (e) {
-                console.log('Object sound creation failed:', e);
-                return null;
-            }
-        }
-
-        function createObjectSounds() {
-            soundNodes.forEach(node => {
-                if (node.osc) { node.osc.stop(); node.osc.disconnect(); }
-                if (node.gain) node.gain.disconnect();
-                if (node.panner) node.panner.disconnect();
-                if (node.lfo) { node.lfo.stop(); node.lfo.disconnect(); }
-                if (node.lfo2) { node.lfo2.stop(); node.lfo2.disconnect(); }
-                if (node.convolver) node.convolver.disconnect();
-            });
-            soundNodes = [];
-
-            const allObjects = [...satellites, ...geometricShapes, ...rings];
-            const count = Math.min(allObjects.length, 40);
-
-            for (let i = 0; i < count; i++) {
-                const obj = allObjects[i];
-                let size = 0.5;
-                let objType = 0;
-                
-                if (obj.geometry) {
-                    const box = new THREE.Box3().setFromObject(obj);
-                    const dims = box.getSize(new THREE.Vector3());
-                    size = (dims.x + dims.y + dims.z) / 3;
-                    
-                    if (obj.geometry.type.includes('Icosahedron')) objType = 1;
-                    else if (obj.geometry.type.includes('Box')) objType = 2;
-                    else if (obj.geometry.type.includes('Cone')) objType = 3;
-                    else if (obj.geometry.type.includes('Cylinder')) objType = 4;
-                    else if (obj.geometry.type.includes('Torus')) objType = 5;
-                    else objType = 0;
-                }
-                
-                const node = createObjectSound(obj, i, size, objType);
-                if (node) {
-                    const angle = (i / count) * Math.PI * 2 + Number(seed64 % 10n) * 0.1;
-                    const distance = 2 + (i % 8) * 0.3 + size * 0.5;
-                    node.position = {
-                        x: Math.cos(angle) * distance,
-                        y: Math.sin(angle * 0.7 + Number(seed64 % 10n) * 0.05) * 1.5,
-                        z: Math.sin(angle) * distance
-                    };
-                    soundNodes.push(node);
-                }
-            }
-            console.log('Sound nodes created:', soundNodes.length);
-        }
-
-        function loadAndPlaySongs() {
-            if (!audioCtx) return;
-
-            songPlayers.forEach(p => {
-                if (p.source) { p.source.stop(); p.source.disconnect(); }
-                if (p.gain) p.gain.disconnect();
-            });
-            songPlayers = [];
-
-            let features = {};
-            try {
-                if (SONG_FEATURES && SONG_FEATURES.length > 0) {
-                    features = decodeSongFeatures(SONG_FEATURES);
-                }
-            } catch (e) {
-                console.log('Failed to decode song features:', e);
-            }
-
-            const featureKeys = Object.keys(features);
-            if (featureKeys.length > 0) {
-                featureKeys.forEach((key, idx) => {
-                    const player = generateAmbientFromFeatures(features[key], seed64, idx);
-                    if (player) {
-                        const baseVolume = 0.06 + Number(seed64 % 30n) * 0.002;
-                        player.gain.gain.setTargetAtTime(baseVolume, audioCtx.currentTime, 0.5);
-
-                        songPlayers.push({
-                            source: player.osc,
-                            gain: player.gain,
-                            panner: player.panner,
-                            lfo: player.lfo,
-                            osc2: player.osc2,
-                            gain2: player.gain2,
-                            lfo2: player.lfo2,
-                            convolver: player.convolver,
-                            baseVolume: baseVolume,
-                            index: idx,
-                            isSynthetic: false
-                        });
-                    }
-                });
-            }
-
-            if (songPlayers.length === 0) {
-                generateSyntheticSongPlayers();
-            }
-
-            console.log('Song players loaded:', songPlayers.length);
-        }
-
-        function generateSyntheticSongPlayers() {
-            for (let idx = 0; idx < 3; idx++) {
-                try {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    const panner = audioCtx.createPanner();
-                    const convolver = audioCtx.createConvolver();
-
-                    const baseFreq = 160 + Number(seed64 % 150n) * (0.3 + idx * 0.2);
-                    const type = ['sine', 'sine', 'triangle'][(Number(seed64) + idx * 5) % 3];
-                    osc.type = type;
-                    osc.frequency.value = Number(baseFreq);
-
-                    const osc2 = audioCtx.createOscillator();
-                    osc2.type = 'sine';
-                    osc2.frequency.value = Number(baseFreq) * 1.5;
-                    const gain2 = audioCtx.createGain();
-                    gain2.gain.value = 0.06;
-
-                    const lfo = audioCtx.createOscillator();
-                    lfo.type = 'sine';
-                    lfo.frequency.value = 0.03 + Number(seed64 % 15n) * 0.002;
-                    const lfoGain = audioCtx.createGain();
-                    lfoGain.gain.value = 8 + Number(seed64 % 20n) * 0.3;
-                    lfo.connect(lfoGain);
-                    lfoGain.connect(osc.frequency);
-                    lfo.start();
-
-                    const lfo2 = audioCtx.createOscillator();
-                    lfo2.type = 'triangle';
-                    lfo2.frequency.value = 0.02 + Number(seed64 % 10n) * 0.001;
-                    const lfoGain2 = audioCtx.createGain();
-                    lfoGain2.gain.value = 0.08;
-                    lfo2.connect(lfoGain2);
-                    lfoGain2.connect(gain.gain);
-                    lfo2.start();
-
-                    convolver.buffer = createEchoImpulse(0.3 + idx * 0.08);
-
-                    const baseVolume = 0.06 + Number(seed64 % 30n) * 0.002;
-                    gain.gain.value = 0.001;
-                    gain.gain.setTargetAtTime(baseVolume, audioCtx.currentTime + 0.5, 0.5);
-
-                    panner.distanceModel = 'inverse';
-                    panner.refDistance = 1;
-                    panner.maxDistance = 25;
-                    panner.rolloffFactor = 0.4;
-
-                    osc.connect(gain);
-                    osc2.connect(gain2);
-                    gain.connect(panner);
-                    gain2.connect(panner);
-                    panner.connect(convolver);
-                    convolver.connect(masterGain);
-                    osc.start();
-                    osc2.start();
-
-                    const player = {
-                        source: osc,
-                        gain: gain,
-                        panner: panner,
-                        baseVolume: baseVolume,
-                        index: idx,
-                        isSynthetic: true,
-                        osc2: osc2,
-                        gain2: gain2,
-                        convolver: convolver,
-                        lfo: lfo,
-                        lfo2: lfo2
-                    };
-
-                    if (!isMuted) {
-                        gain.gain.setTargetAtTime(baseVolume, audioCtx.currentTime, 0.5);
-                    }
-
-                    songPlayers.push(player);
-
-                } catch (e) {
-                    console.log('Synthetic song creation failed:', e);
-                }
-            }
-        }
-
-        function updateObjectSounds() {
-            const allObjects = [...satellites, ...geometricShapes, ...rings];
-            const count = Math.min(allObjects.length, soundNodes.length);
-
-            for (let i = 0; i < count; i++) {
-                const obj = allObjects[i];
-                const node = soundNodes[i];
-                if (obj && node && node.panner) {
-                    const pos = new THREE.Vector3();
-                    obj.getWorldPosition(pos);
-
-                    const distance = pos.length();
-
-                    node.panner.positionX.value = pos.x;
-                    node.panner.positionY.value = pos.y;
-                    node.panner.positionZ.value = pos.z;
-
-                    const sizeScale = Math.max(0.3, Math.min(2.0, node.size * 1.5));
-                    const freqMod = 1 + (distance * 0.015) / sizeScale;
-                    const freq = Math.max(30, (60 + (node.index * 8)) * freqMod);
-                    node.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.2);
-
-                    const volumeScale = Math.max(0.05, Math.min(1, 1 / (1 + distance * 0.04)));
-                    const targetVol = node.volume * volumeScale * 1.5 * sizeScale;
-                    node.gain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.2);
-
-                    const rate = (0.02 + (distance * 0.002)) / sizeScale;
-                    node.lfo.frequency.setTargetAtTime(rate, audioCtx.currentTime, 0.3);
-                }
-            }
-
-            songPlayers.forEach((player, idx) => {
-                if (player.panner) {
-                    const time = performance.now() / 1000;
-                    const angle = (idx / 3) * Math.PI * 2 + time * 0.008;
-                    const distance = 5 + idx * 0.5 + Math.sin(time * 0.015 + idx) * 0.5;
-                    player.panner.positionX.value = Math.cos(angle) * distance;
-                    player.panner.positionZ.value = Math.sin(angle) * distance;
-                    player.panner.positionY.value = Math.sin(angle * 0.5 + time * 0.008) * 1;
-
-                    const vol = player.baseVolume * (0.85 + 0.15 * Math.sin(time * 0.025 + idx));
-                    if (!isMuted && player.gain) {
-                        player.gain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.5);
-                        if (player.gain2) {
-                            player.gain2.gain.setTargetAtTime(vol * 0.4, audioCtx.currentTime, 0.5);
-                        }
-                    }
-
-                    if (player.isSynthetic) {
-                        const freqMod = 1 + 0.08 * Math.sin(time * 0.015 + idx);
-                        player.source.frequency.setTargetAtTime(Number(80 + Number(seed64 % 150n) * (0.3 + idx * 0.2)) * freqMod, audioCtx.currentTime, 0.3);
-                    }
-                }
-            });
-        }
-
-        function startAudio() {
-            if (audioInitialized) {
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                if (!isMuted) {
-                    toggleMute();
-                }
-                return;
-            }
-            audioReady = true;
-            initAudio();
-            document.getElementById('play-btn').textContent = 'PLAYING';
-            document.getElementById('play-btn').style.color = 'rgba(63, 185, 80, 0.9)';
-        }
-
-        document.getElementById('play-btn').addEventListener('click', startAudio);
-        document.getElementById('mute-btn').addEventListener('click', toggleMute);
+        import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 
         const plymouth = document.getElementById('plymouth');
         const progressBar = document.getElementById('plymouth-progress-bar');
@@ -876,16 +276,16 @@
         localStorage.setItem('chaos_visitors', String(visitorCount));
         document.getElementById('visitor-count').textContent = 'visitors: ' + visitorCount;
 
-        const BASE_SEED = '00000000000000000000000000000000';
+        const BASE_SEED = '00000332803236129950523940426038972794344903620302980052269479243684112304572499038931974543768580869346520415294131553407209503';
         const SEED_RAW = BASE_SEED + String(visitorCount).padStart(10, '0');
 
         function splitmix64(a) {
             return function() {
-                a = (a + 0x9E3779B97F4A7C15n) & 0xFFFFFFFFFFFFFFFFn;
+                a = (a + 0x9e3779b97f4a7c15n) & 0xffffffffffffffffn;
                 let z = a;
-                z = ((z ^ (z >> 30n)) * 0xBF58476D1CE4E5B9n) & 0xFFFFFFFFFFFFFFFFn;
-                z = ((z ^ (z >> 27n)) * 0x94D049BB133111EBn) & 0xFFFFFFFFFFFFFFFFn;
-                return Number((z ^ (z >> 31n)) & 0xFFFFFFFFFFFFFFFFn) / 18446744073709551616;
+                z = ((z ^ (z >> 30n)) * 0xbf58476d1ce4e5b9n) & 0xffffffffffffffffn;
+                z = ((z ^ (z >> 27n)) * 0x94d049bb133111ebn) & 0xffffffffffffffffn;
+                return Number((z ^ (z >> 31n)) & 0xffffffffffffffffn) / 18446744073709551616;
             };
         }
 
@@ -895,12 +295,12 @@
             for (let i = 0; i < str.length; i++) {
                 const c = BigInt(str.charCodeAt(i));
                 if (i < str.length / 2) {
-                    h1 = ((h1 << 8n) + c) & 0xFFFFFFFFFFFFFFFFn;
+                    h1 = ((h1 << 8n) + c) & 0xffffffffffffffffn;
                 } else {
-                    h2 = ((h2 << 8n) + c) & 0xFFFFFFFFFFFFFFFFn;
+                    h2 = ((h2 << 8n) + c) & 0xffffffffffffffffn;
                 }
             }
-            return (h1 ^ (h2 << 32n)) & 0xFFFFFFFFFFFFFFFFn;
+            return (h1 ^ (h2 << 32n)) & 0xffffffffffffffffn;
         }
 
         const seed64 = seedTo64(SEED_RAW);
@@ -919,26 +319,13 @@
             return new THREE.Color().setHSL(hue, sat, light);
         }
 
-        function seededColorPair() {
-            const h1 = rand();
-            const h2 = (h1 + 0.3 + 0.5 * rand()) % 1.0;
-            const s1 = 0.60 + 0.40 * rand();
-            const s2 = 0.60 + 0.40 * rand();
-            const l1 = 0.35 + 0.50 * rand();
-            const l2 = 0.35 + 0.50 * rand();
-            return {
-                a: new THREE.Color().setHSL(h1, s1, l1),
-                b: new THREE.Color().setHSL(h2, s2, l2),
-            };
-        }
-
         function getBgColors() {
             const h1 = rand();
             const h2 = (h1 + 0.4 + 0.4 * rand()) % 1.0;
-            const s1 = 0.50 + 0.40 * rand();
-            const s2 = 0.50 + 0.40 * rand();
-            const l1 = 0.04 + 0.10 * rand();
-            const l2 = 0.04 + 0.10 * rand();
+            const s1 = 0.7 + 0.3 * rand();
+            const s2 = 0.7 + 0.3 * rand();
+            const l1 = 0.02 + 0.06 * rand();
+            const l2 = 0.02 + 0.06 * rand();
             return {
                 top: new THREE.Color().setHSL(h1, s1, l1),
                 bottom: new THREE.Color().setHSL(h2, s2, l2),
@@ -1000,7 +387,9 @@
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.toneMappingExposure = 0.5;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -1012,15 +401,14 @@
         controls.target.set(0, 0, 0);
         controls.maxPolarAngle = Math.PI / 2;
         controls.minPolarAngle = 0;
+        controls.minDistance = 1;
+        controls.maxDistance = 200;
 
         const composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
 
-        const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(width, height),
-            0.4, 0.3, 0.1
-        );
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.15, 0.3, 0.1);
         composer.addPass(bloomPass);
 
         const filmPass = new FilmPass(0.35, 0.025, 648, false);
@@ -1030,38 +418,61 @@
         afterimagePass.renderToScreen = true;
         composer.addPass(afterimagePass);
 
-        const ambientLight = new THREE.AmbientLight(0x222244, 0.5);
+        const ambientLight = new THREE.AmbientLight(0x0a0414, 0.25);
         scene.add(ambientLight);
 
         const lightColor = seededColor();
         const lightPos = new THREE.Vector3(
-            randRange(-8, 8),
-            randRange(-8, 8),
-            randRange(-8, 8)
+            Math.sin(randRange(0, Math.PI * 2)) * randRange(5, 9),
+            randRange(7, 14),
+            Math.cos(randRange(0, Math.PI * 2)) * randRange(5, 9)
         );
-        const dirLight = new THREE.DirectionalLight(lightColor, 2.5);
-        dirLight.position.copy(lightPos);
-        scene.add(dirLight);
+
+        const keyLight = new THREE.DirectionalLight(lightColor, randRange(0.9, 1.5));
+        keyLight.position.copy(lightPos);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;
+        keyLight.shadow.camera.near = 0.8;
+        keyLight.shadow.camera.far = 40.0;
+
+        const shadowExtent = randRange(8, 14);
+        keyLight.shadow.camera.left = -shadowExtent;
+        keyLight.shadow.camera.right = shadowExtent;
+        keyLight.shadow.camera.top = shadowExtent;
+        keyLight.shadow.camera.bottom = -shadowExtent;
+        keyLight.shadow.bias = -0.0002;
+        keyLight.shadow.normalBias = 0.022;
+        keyLight.shadow.radius = randRange(2.0, 5.0);
+        scene.add(keyLight);
 
         const lightColor2 = seededColor();
-        const lightPos2 = new THREE.Vector3(
-            randRange(-8, 8),
-            randRange(-8, 8),
-            randRange(-8, 8)
+        const fillLight = new THREE.DirectionalLight(lightColor2, randRange(0.2, 0.45));
+        fillLight.position.set(
+            -lightPos.x * randRange(0.7, 1.3),
+            randRange(-3, 5),
+            -lightPos.z * randRange(0.7, 1.3)
         );
-        const dirLight2 = new THREE.DirectionalLight(lightColor2, 1.5);
-        dirLight2.position.copy(lightPos2);
-        scene.add(dirLight2);
+        scene.add(fillLight);
+
+        const lightColor3 = seededColor();
+        const rimLight = new THREE.DirectionalLight(lightColor3, randRange(0.4, 0.8));
+        rimLight.position.set(
+            randRange(-4, 4),
+            randRange(2, 6),
+            -randRange(8, 14)
+        );
+        scene.add(rimLight);
 
         const bgColors = getBgColors();
-        const bgGeo = new THREE.SphereGeometry(80, 32, 32);
+        const bgGeo = new THREE.SphereGeometry(80, 64, 64);
         const bgMat = new THREE.ShaderMaterial({
             side: THREE.BackSide,
             uniforms: {
-                uColorTop: { value: bgColors.top },
-                uColorBottom: { value: bgColors.bottom },
                 uTime: { value: 0 },
-                uSeed: { value: Number(seed64 & 0xFFFFFFFFn) },
+                uSeed: { value: Number(seed64 & 0xffffff2n) },
+                uColorA: { value: bgColors.top },
+                uColorB: { value: bgColors.bottom },
             },
             vertexShader: `
             varying vec3 vPos;
@@ -1071,242 +482,591 @@
             }
           `,
             fragmentShader: `
-            uniform vec3 uColorTop;
-            uniform vec3 uColorBottom;
+            uniform vec3 uColorA;
+            uniform vec3 uColorB;
             uniform float uTime;
             uniform float uSeed;
             varying vec3 vPos;
-            float hash(vec3 p) {
-              p = fract(p * 0.3183099 + 0.1);
-              p *= 17.0;
-              return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        
+            mat2 rot(float a) {
+              float c = cos(a), s = sin(a);
+              return mat2(c, -s, s, c);
             }
-            float noise(vec3 p) {
-              vec3 i = floor(p);
-              vec3 f = fract(p);
-              f = f * f * (3.0 - 2.0 * f);
-              return mix(
-                mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x),
-                    mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
-                mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
-                    mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+        
+            float hyperspace(vec2 p, float t) {
+              float accum = 0.0;
+              float amp = 0.5;
+              vec2 shift = vec2(100.0);
+              for (int i = 0; i < 5; i++) {
+                p = rot(1.2 + uSeed * 0.0001) * p * 1.4 + shift;
+                p += sin(p.yx * 2.0 + t * 0.3) * 0.6;
+                accum += sin(p.x + p.y) * amp;
+                amp *= 0.5;
+              }
+              return accum;
             }
+        
+            vec3 hsv2rgb(vec3 c) {
+              vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+              vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+              return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+            }
+        
             void main() {
               vec3 dir = normalize(vPos);
-              float t = 0.5 + 0.5 * dir.y;
-              float wave = sin(dir.x * 3.0 + uTime * 0.08) * 0.08
-                         + cos(dir.z * 3.0 + uTime * 0.06) * 0.08;
-              t = clamp(t + wave, 0.0, 1.0);
-              float n = noise(dir * 2.0 + uTime * 0.02) * 0.06;
-              t = clamp(t + n, 0.0, 1.0);
-              vec3 col = mix(uColorBottom, uColorTop, t);
-              float v = 1.0 - 0.3 * length(dir.xy);
-              col *= v;
-              gl_FragColor = vec4(col, 1.0);
+              vec2 uv = dir.xy / (1.0 + abs(dir.z));
+              uv *= 2.5;
+        
+              float t = uTime * 0.15;
+        
+              vec2 p = uv + vec2(sin(t * 0.2), cos(t * 0.3)) * 0.5;
+              float warp1 = hyperspace(p, t);
+              float warp2 = hyperspace(p * 1.5 - warp1, -t * 0.8);
+        
+              float pattern = sin(warp1 * 4.0 + warp2 * 3.0 + t) * 0.5 + 0.5;
+              float structure = cos(warp2 * 6.0 - warp1 * 2.0 - t * 0.5) * 0.5 + 0.5;
+        
+              float hue = fract(pattern * 0.3 + structure * 0.2 + t * 0.05 + uSeed * 0.00001);
+              float sat = 0.85 + 0.15 * sin(warp1 * 5.0);
+              float light = 0.12 + 0.18 * structure;
+        
+              vec3 psychedelic = hsv2rgb(vec3(hue, sat, light));
+        
+              float mixFactor = smoothstep(0.1, 0.9, pattern);
+              vec3 baseCol = mix(uColorA, uColorB, mixFactor);
+        
+              vec3 finalCol = mix(baseCol, psychedelic, 0.55 + 0.25 * cos(t * 0.4));
+        
+              float grid = abs(sin(uv.x * 10.0 + warp1 * 3.0) * cos(uv.y * 20.0 + warp2 * 3.0));
+              grid = pow(grid, 4.0) * 0.2;
+              finalCol += vec3(0.6, 0.9, 1.0) * grid * (0.5 + 0.5 * sin(t));
+        
+              float vignette = 1.0 - 0.4 * length(dir.xy);
+              finalCol *= vignette;
+        
+              gl_FragColor = vec4(finalCol, 1.0);
             }
-          `
+          `,
         });
         const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+        bgMesh.receiveShadow = false;
         scene.add(bgMesh);
 
         const geoParams = getGeoParams();
         let mainGeo;
-        switch (geoParams.type) {
+        const subSeg = Math.floor(randRange(24, 96));
+        const subSeg2 = Math.floor(randRange(12, 48));
+        const shapeType = Math.abs(Math.floor(geoParams.type)) % 24;
+
+        const superformula = (phi, a, b, m, n1, n2, n3) => {
+            let t1 = Math.abs(Math.cos(m * phi / 4) / a);
+            t1 = Math.pow(t1, n2);
+            let t2 = Math.abs(Math.sin(m * phi / 4) / b);
+            t2 = Math.pow(t2, n3);
+            let t3 = t1 + t2;
+            if (t3 === 0) return 0;
+            return Math.pow(t3, -1 / n1);
+        };
+
+        switch (shapeType) {
             case 0:
-                mainGeo = new THREE.TorusKnotGeometry(
-                    geoParams.radius, geoParams.tube,
-                    geoParams.radialSeg, geoParams.tubularSeg,
-                    geoParams.p, geoParams.q
-                );
+                mainGeo = new THREE.TorusKnotGeometry(geoParams.radius, geoParams.tube, subSeg * 2, subSeg2, Math.floor(randRange(1, 8)), Math.floor(randRange(2, 11)));
                 break;
             case 1:
-                mainGeo = new THREE.TorusGeometry(
-                    geoParams.radius, geoParams.tube,
-                    geoParams.radialSeg, geoParams.tubularSeg
-                );
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const theta = u * Math.PI * 2;
+                    const phi = (v - 0.5) * Math.PI;
+                    const r1 = superformula(theta, randRange(0.5, 1.5), randRange(0.5, 1.5), randRange(2, 9), randRange(0.5, 2.0), randRange(0.5, 2.0), randRange(0.5, 2.0));
+                    const r2 = superformula(phi, randRange(0.5, 1.5), randRange(0.5, 1.5), randRange(1, 7), randRange(0.5, 2.0), randRange(0.5, 2.0), randRange(0.5, 2.0));
+                    const x = geoParams.radius * r1 * Math.cos(theta) * r2 * Math.cos(phi);
+                    const y = geoParams.radius * r1 * Math.sin(theta) * r2 * Math.cos(phi);
+                    const z = geoParams.radius * r2 * Math.sin(phi);
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
                 break;
             case 2:
-                mainGeo = new THREE.IcosahedronGeometry(geoParams.radius, geoParams.detail);
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u1 = u * Math.PI * 2;
+                    const v1 = v * Math.PI * 2;
+                    const a = geoParams.radius;
+                    const n = randRange(1.0, 5.0);
+                    const x = a * Math.cos(u1) * (1 + Math.cos(v1) / n);
+                    const y = a * Math.sin(u1) * (1 + Math.cos(v1) / n);
+                    const z = a * Math.sin(v1) / n + Math.sin(u1 * 3.0) * randRange(0.1, 0.5);
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
                 break;
             case 3:
-                mainGeo = new THREE.OctahedronGeometry(geoParams.radius, geoParams.detail);
+                mainGeo = new THREE.IcosahedronGeometry(geoParams.radius, Math.floor(randRange(0, 4)));
                 break;
             case 4:
-                mainGeo = new THREE.DodecahedronGeometry(geoParams.radius, geoParams.detail);
+                mainGeo = new THREE.OctahedronGeometry(geoParams.radius, Math.floor(randRange(0, 4)));
                 break;
             case 5:
-                mainGeo = new THREE.BoxGeometry(
-                    geoParams.width, geoParams.height, geoParams.depth
-                );
+                mainGeo = new THREE.DodecahedronGeometry(geoParams.radius, Math.floor(randRange(0, 3)));
                 break;
             case 6:
-                mainGeo = new THREE.SphereGeometry(geoParams.radius, geoParams.radialSeg, geoParams.tubularSeg);
+                mainGeo = new THREE.BoxGeometry(geoParams.width, geoParams.height, geoParams.depth, subSeg2, subSeg2, subSeg2);
                 break;
             case 7:
-                mainGeo = new THREE.CylinderGeometry(
-                    geoParams.radius * 0.7, geoParams.radius,
-                    geoParams.height, geoParams.radialSeg
-                );
+                mainGeo = new THREE.SphereGeometry(geoParams.radius, subSeg, subSeg2);
                 break;
             case 8:
-                mainGeo = new THREE.ConeGeometry(geoParams.radius, geoParams.height, geoParams.radialSeg);
+                mainGeo = new THREE.CylinderGeometry(geoParams.radius * randRange(0.1, 1.5), geoParams.radius * randRange(0.1, 1.5), geoParams.height, subSeg, subSeg2);
                 break;
             case 9:
-                mainGeo = new THREE.RingGeometry(geoParams.radius * 0.3, geoParams.radius, geoParams.radialSeg);
+                mainGeo = new THREE.ConeGeometry(geoParams.radius, geoParams.height, subSeg, subSeg2);
                 break;
             case 10:
-                mainGeo = new THREE.PlaneGeometry(geoParams.width, geoParams.height, geoParams.radialSeg, geoParams.tubularSeg);
+                mainGeo = new THREE.RingGeometry(geoParams.radius * randRange(0.05, 0.5), geoParams.radius * randRange(1.0, 2.0), subSeg);
                 break;
             case 11:
-                mainGeo = new THREE.LatheGeometry(
-                    Array.from({ length: 10 }, (_, i) => new THREE.Vector2(
-                        randRange(0.2, 1.0),
-                        (i / 9) * geoParams.height - geoParams.height / 2
-                    )),
-                    geoParams.radialSeg
-                );
+                mainGeo = new THREE.PlaneGeometry(geoParams.width, geoParams.height, subSeg, subSeg);
                 break;
             case 12:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const x = u * geoParams.width - geoParams.width / 2;
-                    const z = v * geoParams.depth - geoParams.depth / 2;
-                    const y = Math.sin(u * Math.PI * 3) * Math.cos(v * Math.PI * 3) * geoParams.height / 2;
-                    target.set(x, y, z);
-                }, geoParams.radialSeg, geoParams.tubularSeg);
+                mainGeo = new THREE.LatheGeometry(
+                    Array.from({ length: 24 }, (_, i) => {
+                        const t = i / 23;
+                        return new THREE.Vector2(
+                            Math.sin(t * Math.PI * randRange(1, 6)) * randRange(0.2, 1.2) + randRange(0.1, 0.5),
+                            (t - 0.5) * geoParams.height * randRange(0.8, 1.5)
+                        );
+                    }),
+                    subSeg
+                );
                 break;
+            case 13:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * Math.PI * randRange(1.0, 4.0);
+                    const v_ = (v - 0.5) * Math.PI * 2.0;
+                    const r = geoParams.radius * (1.0 + 0.3 * Math.sin(u_ * 3.0 + v_ * 2.0));
+                    const x = r * Math.cos(u_) * Math.cos(v_);
+                    const y = r * Math.sin(u_) * Math.cos(v_);
+                    const z = r * Math.sin(v_) + Math.cos(u_ * v_) * 0.5;
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
+                break;
+            case 14:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * 4.0 - 2.0;
+                    const v_ = v * 4.0 - 2.0;
+                    const x = u_;
+                    const y = v_;
+                    const z = Math.sin(u_ * u_ - v_ * v_) * 0.8 * randRange(0.5, 2.0);
+                    target.set(x, y, z);
+                }, subSeg, subSeg);
+                break;
+            case 15:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const phi = u * Math.PI * 2.0;
+                    const theta = v * Math.PI;
+                    const c = randRange(0.5, 2.0);
+                    const x = c * (1.0 - phi / (2.0 * Math.PI)) * Math.cos(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.cos(phi);
+                    const y = c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.sin(phi);
+                    const z = c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(theta);
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
+                break;
+            case 16:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * Math.PI * 2.0;
+                    const v_ = v * Math.PI;
+                    const r = geoParams.radius;
+                    const x = r * (2.0 + Math.cos(v_)) * Math.cos(u_);
+                    const y = r * (2.0 + Math.cos(v_)) * Math.sin(u_);
+                    const z = r * (Math.sin(v_) + Math.cos(v_ * 4.0));
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
+                break;
+            case 17:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * Math.PI * 2.0;
+                    const v_ = v * 2.0 - 1.0;
+                    const r = geoParams.radius;
+                    const x = r * Math.sqrt(1.0 - v_ * v_) * Math.cos(u_);
+                    const y = r * Math.sqrt(1.0 - v_ * v_) * Math.sin(u_);
+                    const z = r * v_ + Math.sin(u_ * 6.0) * 0.2;
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
+                break;
+            case 18:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * Math.PI * 2.0;
+                    const v_ = v * Math.PI * 2.0;
+                    const x = Math.sin(u_) * Math.cos(v_) * geoParams.radius;
+                    const y = Math.sin(u_) * Math.sin(v_) * geoParams.radius;
+                    const z = Math.cos(u_) * geoParams.radius + Math.sin(u_ * 3.0 + v_ * 3.0) * 0.4;
+                    target.set(x, y, z);
+                }, subSeg, subSeg2);
+                break;
+            case 19:
+                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
+                    const u_ = u * 6.0 - 3.0;
+                    const v_ = v * 6.0 - 3.0;
+                    const r = Math.sqrt(u_ * u_ + v_ * v_) + 0.001;
+                    const z = Math.sin(r * randRange(2.0, 8.0)) / r * 0.8;
+                    target.set(u_, z, v_);
+                }, subSeg, subSeg);
+                break;
+            case 20:
+                mainGeo = new THREE.TorusGeometry(geoParams.radius * randRange(0.5, 1.5), geoParams.tube * randRange(0.2, 2.0), subSeg2, subSeg, Math.PI * randRange(0.5, 2.0));
+                break;
+            case 21:
+                mainGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(-randRange(1, 3), randRange(-1, 1), -randRange(1, 3)),
+                    new THREE.Vector3(randRange(-1, 1), randRange(1, 3), randRange(-1, 1)),
+                    new THREE.Vector3(randRange(1, 3), -randRange(-1, 1), randRange(1, 3)),
+                    new THREE.Vector3(-randRange(1, 3), -randRange(1, 3), randRange(-1, 1))
+                ]), subSeg, geoParams.tube * randRange(0.5, 2.0), subSeg2, true);
+                break;
+            case 22:
+                mainGeo = new THREE.LatheGeometry(
+                    Array.from({ length: 30 }, (_, i) => {
+                        const phi = (i / 29) * Math.PI;
+                        return new THREE.Vector2(
+                            Math.sin(phi) * geoParams.radius + Math.cos(phi * 4.0) * 0.15,
+                            Math.cos(phi) * geoParams.height
+                        );
+                    }),
+                    subSeg
+                );
+                break;
+            case 23:
             default:
-                mainGeo = new THREE.TorusKnotGeometry(1.6, 0.4, 64, 16, 3, 4);
+                mainGeo = new THREE.TorusKnotGeometry(1.6, 0.4, 64, 16, Math.floor(randRange(1, 5)), Math.floor(randRange(2, 6)));
+                break;
         }
 
         const posAttr = mainGeo.attributes.position;
         const vertCount = posAttr.count;
-        const disp = new Float32Array(vertCount);
-        for (let i = 0; i < vertCount; i++) {
-            disp[i] = randRange(-0.4, 0.4);
-        }
         const origPos = posAttr.array.slice();
+
+        const tX = randRange(-2.5, 2.5);
+        const tY = randRange(-2.5, 2.5);
+        const tZ = randRange(-2.5, 2.5);
+        const pX = randRange(0.5, 4.5);
+        const pY = randRange(0.5, 4.5);
+        const pZ = randRange(0.5, 4.5);
+        const fA = randRange(1.0, 8.0);
+        const fB = randRange(1.0, 8.0);
+        const dAmp = randRange(0.05, 0.5);
+        const harmonicOrder = Math.floor(randRange(1, 6));
+
         for (let i = 0; i < vertCount; i++) {
             const i3 = i * 3;
-            const x = origPos[i3];
-            const y = origPos[i3 + 1];
-            const z = origPos[i3 + 2];
-            const len = Math.sqrt(x * x + y * y + z * z) || 1;
-            const d = disp[i] * 0.8;
-            posAttr.array[i3] = x + (x / len) * d;
-            posAttr.array[i3 + 1] = y + (y / len) * d;
-            posAttr.array[i3 + 2] = z + (z / len) * d;
+            let x = origPos[i3];
+            let y = origPos[i3 + 1];
+            let z = origPos[i3 + 2];
+        
+            const angleX = y * tX * 0.2;
+            const angleY = z * tY * 0.2;
+            const angleZ = x * tZ * 0.2;
+        
+            let nx = x * Math.cos(angleY) - z * Math.sin(angleY);
+            let nz = x * Math.sin(angleY) + z * Math.cos(angleY);
+            x = nx;
+            z = nz;
+        
+            let ny = y * Math.cos(angleX) - z * Math.sin(angleX);
+            nz = y * Math.sin(angleX) + z * Math.cos(angleX);
+            y = ny;
+            z = nz;
+        
+            const dist = Math.sqrt(x * x + y * y + z * z) || 1;
+            const sphericalHarmonic = Math.sin(harmonicOrder * Math.atan2(y, x)) * Math.cos(harmonicOrder * Math.acos(z / dist));
+            const complexMod = Math.sin(x * pX) * Math.cos(y * pY) * Math.sin(z * pZ) + (sphericalHarmonic * 0.4);
+            const disp = (complexMod * fA + Math.cos(dist * fB) * 0.5) * dAmp;
+        
+            posAttr.array[i3] = x + (x / dist) * disp * randRange(0.8, 1.2);
+            posAttr.array[i3 + 1] = y + (y / dist) * disp * randRange(0.8, 1.2);
+            posAttr.array[i3 + 2] = z + (z / dist) * disp * randRange(0.8, 1.2);
         }
-        mainGeo.computeVertexNormals();
 
-        const colorPair = seededColorPair();
+        mainGeo.computeVertexNormals();
+        mainGeo.center();
+
+        const h1 = rand();
+        const h2 = (h1 + randRange(0.25, 0.75)) % 1.0;
+        const h3 = (h2 + randRange(0.25, 0.75)) % 1.0;
+
+        const s1 = randRange(0.65, 1.0),
+            s2 = randRange(0.65, 1.0),
+            s3 = randRange(0.65, 1.0);
+
+        const l1 = randRange(0.25, 0.65),
+            l2 = randRange(0.25, 0.65),
+            l3 = randRange(0.25, 0.65);
+
+        const colorA = new THREE.Color().setHSL(h1, s1, l1);
+        const colorB = new THREE.Color().setHSL(h2, s2, l2);
+        const colorC = new THREE.Color().setHSL(h3, s3, l3);
+
+        const specHue = (h1 + randRange(0.05, 0.3)) % 1.0;
+        const specCol = new THREE.Color().setHSL(specHue, 0.9, 0.6);
+
         const motion = getMotionParams();
-        const shouldInvert = motion.invertChance > 0.5;
-        const brightnessOffset = motion.brightnessOffset;
+        const shouldInvert = rand() > 0.9;
+        const brightnessOffset = Math.min(0, Math.max(-0.2, motion.brightnessOffset));
+
+        const noiseScale = randRange(0.8, 3.2);
+        const dispStrength = randRange(0.12, 0.35);
 
         const mainMat = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uColorA: { value: colorPair.a },
-                uColorB: { value: colorPair.b },
+                uColorA: { value: colorA },
+                uColorB: { value: colorB },
+                uColorC: { value: colorC },
                 uPulseSpeed: { value: motion.pulseSpeed },
-                uPulseAmp: { value: motion.pulseAmp },
-                uWaveSpeed: { value: motion.waveSpeed },
-                uWaveAmp: { value: motion.waveAmp },
+                uPulseAmp: { value: motion.pulseAmp * 0.05 },
                 uChaos: { value: motion.chaosFactor },
                 uInvert: { value: shouldInvert ? 1 : 0 },
                 uBrightness: { value: 1 + brightnessOffset },
-                uSeed: { value: Number(seed64 & 0xFFFFFFFFn) },
+                uMetalness: { value: randRange(0.15, 0.45) },
+                uGlossiness: { value: randRange(0.35, 0.75) },
+                uSpecColor: { value: specCol },
+                uLightPos: { value: lightPos.clone() },
+                uLightColor: { value: lightColor.clone() },
+                uShadowMap: { value: keyLight.shadow.map },
+                uShadowMatrix: { value: keyLight.shadow.matrix },
             },
             vertexShader: `
-            uniform float uTime;
-            uniform float uWaveSpeed;
-            uniform float uWaveAmp;
-            uniform float uChaos;
-            varying vec3 vNormal;
-            varying vec3 vPos;
-            varying float vDisplacement;
-            float hash(vec3 p) {
-              p = fract(p * 0.3183099 + 0.1);
-              p *= 17.0;
-              return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-            }
-            float noise(vec3 p) {
-              vec3 i = floor(p);
-              vec3 f = fract(p);
-              f = f * f * (3.0 - 2.0 * f);
-              return mix(
-                mix(mix(hash(i), hash(i+vec3(1,0,0)), f.x),
-                    mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x), f.y),
-                mix(mix(hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
-                    mix(hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x), f.y), f.z);
-            }
-            void main() {
-              vec3 pos = position;
-              float n = noise(pos * 1.2 + uTime * uWaveSpeed * 0.3);
-              float wave = sin(pos.x * 2.0 + uTime * uWaveSpeed) * uWaveAmp * 0.3
-                         + cos(pos.y * 2.0 + uTime * uWaveSpeed * 0.7) * uWaveAmp * 0.3
-                         + sin(pos.z * 2.0 + uTime * uWaveSpeed * 0.5) * uWaveAmp * 0.3;
-              float chaos = sin(pos.x * uChaos + uTime * 0.5) * 0.3 +
-                           cos(pos.y * uChaos + uTime * 0.7) * 0.3 +
-                           sin(pos.z * uChaos + uTime * 0.3) * 0.3;
-              float d = n * 0.25 + wave * 0.2 + chaos * 0.15;
-              pos += normal * d;
-              vDisplacement = d;
-              vNormal = normalize(normalMatrix * normal);
-              vPos = pos;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-            }
-          `,
+                uniform float uTime;
+                uniform float uChaos;
+                uniform mat4 uShadowMatrix;
+        
+                varying vec3 vWorldNormal;
+                varying vec3 vWorldPos;
+                varying float vDisplacement;
+                varying vec4 vShadowCoord;
+        
+                float hash(vec3 p) {
+                  p = fract(p * 0.3183099 + 0.1);
+                  p *= 17.0;
+                  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+                }
+
+                float noise(vec3 p) {
+                  vec3 i = floor(p);
+                  vec3 f = fract(p);
+                  f = f * f * (3.0 - 2.0 * f);
+                  return mix(
+                    mix(mix(hash(i), hash(i+vec3(1,0,0)), f.x),
+                        mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x), f.y),
+                    mix(mix(hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
+                        mix(hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x), f.y), f.z);
+                }
+        
+                float fbm(vec3 p) {
+                    float f = 0.0;
+                    float amp = 0.5;
+                    for (int i = 0; i < 3; i++) {
+                        f += amp * noise(p);
+                        p *= 2.03;
+                        amp *= 0.5;
+                    }
+                    return f;
+                }
+        
+                void main() {
+                  vec3 pos = position;
+                  float n = fbm(pos * ${noiseScale.toFixed(2)} + uTime * 0.15);
+                  float wave = sin(pos.x * 2.5 + uTime * 0.4) * 0.12 +
+                               cos(pos.y * 2.5 + uTime * 0.3) * 0.12;
+                  float chaosWave = sin(pos.x * uChaos + uTime * 0.4) * 0.15 +
+                                    cos(pos.z * uChaos + uTime * 0.3) * 0.15;
+
+                  float d = (n * 1.2 + wave + chaosWave) * ${dispStrength.toFixed(2)};
+                  pos += normal * d;
+                  vDisplacement = d;
+        
+                  vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+                  vWorldPos = worldPos.xyz;
+                  vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        
+                  vShadowCoord = uShadowMatrix * worldPos;
+                  gl_Position = projectionMatrix * viewMatrix * worldPos;
+                }
+            `,
             fragmentShader: `
-            uniform vec3 uColorA;
-            uniform vec3 uColorB;
-            uniform float uTime;
-            uniform float uPulseSpeed;
-            uniform float uPulseAmp;
-            uniform float uChaos;
-            uniform float uInvert;
-            uniform float uBrightness;
-            varying vec3 vNormal;
-            varying vec3 vPos;
-            varying float vDisplacement;
-            void main() {
-              float pulse = 0.5 + 0.5 * sin(uTime * uPulseSpeed);
-              float chaosMod = 0.5 + 0.5 * sin(uTime * uChaos * 0.3);
-              float mixVal = 0.5 + 0.5 * vDisplacement * 2.0 + pulse * uPulseAmp + chaosMod * 0.3;
-              mixVal = clamp(mixVal, 0.0, 1.0);
-              vec3 col = mix(uColorA, uColorB, mixVal);
-              vec3 viewDir = normalize(cameraPosition - vPos);
-              float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 2.5);
-              col += fresnel * 0.6 * mix(uColorA, uColorB, 0.5);
-              float rim = 1.0 - abs(dot(viewDir, vNormal));
-              col += rim * 0.15 * vec3(0.8, 0.9, 1.0);
-              float chaosGlow = 0.5 + 0.5 * sin(uTime * uChaos + vPos.x * 2.0 + vPos.y * 3.0);
-              col += chaosGlow * 0.08 * vec3(0.5, 0.8, 1.0);
-              col = mix(col, 1.0 - col, uInvert);
-              col *= uBrightness;
-              gl_FragColor = vec4(col, 0.92);
-            }
-          `,
-            transparent: true,
+                uniform vec3 uColorA;
+                uniform vec3 uColorB;
+                uniform vec3 uColorC;
+                uniform float uTime;
+                uniform float uPulseSpeed;
+                uniform float uPulseAmp;
+                uniform float uChaos;
+                uniform float uInvert;
+                uniform float uBrightness;
+                uniform float uMetalness;
+                uniform float uGlossiness;
+                uniform vec3 uSpecColor;
+                uniform vec3 uLightPos;
+                uniform vec3 uLightColor;
+                uniform sampler2D uShadowMap;
+                uniform mat4 uShadowMatrix;
+        
+                varying vec3 vWorldNormal;
+                varying vec3 vWorldPos;
+                varying float vDisplacement;
+                varying vec4 vShadowCoord;
+        
+                float sampleShadow(vec4 shadowCoord) {
+                  vec3 projCoords = shadowCoord.xyz / shadowCoord.w;
+                  projCoords = projCoords * 0.5 + 0.5;
+                  if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
+                      projCoords.y < 0.0 || projCoords.y > 1.0 ||
+                      projCoords.z < 0.0 || projCoords.z > 1.0) {
+                    return 1.0;
+                  }
+                  float closestDepth = texture2D(uShadowMap, projCoords.xy).r;
+                  float currentDepth = projCoords.z;
+                  float bias = 0.005;
+                  return (currentDepth - bias) < closestDepth ? 0.0 : 1.0;
+                }
+        
+                void main() {
+                  vec3 normal = normalize(vWorldNormal);
+                  vec3 viewDir = normalize(cameraPosition - vWorldPos);
+                  vec3 lightDir = normalize(uLightPos - vWorldPos);
+        
+                  float diff = max(dot(normal, lightDir), 0.0);
+                  vec3 diffuse = uLightColor * diff * 0.45;
+        
+                  vec3 halfDir = normalize(lightDir + viewDir);
+                  float spec = pow(max(dot(normal, halfDir), 0.0), 1.0 / max(0.01, 1.0 - uGlossiness));
+                  vec3 specular = uSpecColor * spec * uMetalness * 0.15;
+        
+                  float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 3.0);
+                  vec3 fresnelCol = fresnel * 0.08 * mix(uColorA, uColorC, 0.5);
+        
+                  float shadow = sampleShadow(vShadowCoord);
+        
+                  vec3 baseCol;
+                  float t = clamp(vDisplacement * 3.0 + 0.5, 0.0, 1.0);
+                  if(t < 0.5) {
+                      baseCol = mix(uColorA, uColorB, t * 2.0);
+                  } else {
+                      baseCol = mix(uColorB, uColorC, (t - 0.5) * 2.0);
+                  }
+        
+                  vec3 finalCol = baseCol * (0.2 + 0.8 * shadow * diffuse) + specular + fresnelCol;
+                  finalCol += baseCol * 0.12;
+        
+                  float pulse = 0.5 + 0.5 * sin(uTime * uPulseSpeed);
+                  finalCol += vec3(0.004, 0.002, 0.005) * pulse * uPulseAmp;
+        
+                  finalCol = clamp(finalCol, 0.0, 1.0);
+                  finalCol = mix(finalCol, 1.0 - finalCol, uInvert);
+                  finalCol *= uBrightness;
+        
+                  gl_FragColor = vec4(finalCol, 1.0);
+                }
+            `,
+            transparent: false,
             side: THREE.DoubleSide,
             wireframe: false,
         });
 
         const mainMesh = new THREE.Mesh(mainGeo, mainMat);
+        mainMesh.castShadow = true;
+        mainMesh.receiveShadow = true;
         scene.add(mainMesh);
 
         const wireMat = new THREE.MeshBasicMaterial({
-            color: 0x88aaff,
+            color: 0x002c9c,
             wireframe: true,
             transparent: true,
-            opacity: 0.08,
+            opacity: 0.2,
         });
         const wireMesh = new THREE.Mesh(mainGeo.clone(), wireMat);
         wireMesh.scale.set(1.01, 1.01, 1.01);
+        wireMesh.castShadow = false;
+        wireMesh.receiveShadow = false;
         scene.add(wireMesh);
 
-        const satelliteCount = randInt(5, 25);
+        const satelliteCount = randInt(1, 10);
         const satellites = [];
+
+        function createSatelliteShader(baseColor, invert, brightness) {
+            const hueShift = randRange(0, 1);
+            const glitchAmt = randRange(0.2, 0.8);
+            const speed = randRange(1.0, 4.0);
+            const mode = randInt(0, 4);
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uBaseColor: { value: baseColor.clone() },
+                    uInvert: { value: invert ? 1 : 0 },
+                    uBrightness: { value: brightness },
+                    uHueShift: { value: hueShift },
+                    uGlitchAmt: { value: glitchAmt },
+                    uSpeed: { value: speed },
+                    uMode: { value: mode },
+                },
+                vertexShader: `
+                varying vec3 vPos;
+                varying vec3 vNormal;
+                void main() {
+                  vPos = position;
+                  vNormal = normalize(normalMatrix * normal);
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+              `,
+                fragmentShader: `
+                uniform vec3 uBaseColor;
+                uniform float uTime;
+                uniform float uInvert;
+                uniform float uBrightness;
+                uniform float uHueShift;
+                uniform float uGlitchAmt;
+                uniform float uSpeed;
+                uniform int uMode;
+
+                varying vec3 vPos;
+                varying vec3 vNormal;
+
+                vec3 hsv2rgb(vec3 c) {
+                  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+                  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                }
+
+                void main() {
+                  vec3 col = uBaseColor;
+                  if (uMode == 0) {
+                    float hue = uHueShift + uTime * 0.05 * uSpeed;
+                    col = hsv2rgb(vec3(hue, 0.9, 0.6));
+                  } else if (uMode == 1) {
+                    float r = sin(vPos.x * 20.0 + uTime * 15.0 * uSpeed) * uGlitchAmt;
+                    float g = cos(vPos.y * 20.0 + uTime * 12.0 * uSpeed) * uGlitchAmt;
+                    float b = sin(vPos.z * 20.0 + uTime * 18.0 * uSpeed) * uGlitchAmt;
+                    col = vec3(uBaseColor.r + r, uBaseColor.g + g, uBaseColor.b + b);
+                  } else if (uMode == 2) {
+                    float angle = atan(vPos.z, vPos.x);
+                    float radius = length(vPos.xy);
+                    float swirl = sin(radius * 10.0 - angle * 4.0 + uTime * uSpeed);
+                    float hue = uHueShift + swirl * 0.3;
+                    col = hsv2rgb(vec3(hue, 0.9, 0.6));
+                  } else if (uMode == 3) {
+                    float wave = sin(vPos.x * 5.0 + vPos.y * 5.0 + uTime * uSpeed);
+                    col = mix(uBaseColor, 1.0 - uBaseColor, abs(wave) * 0.8);
+                  } else {
+                    float sparkle = sin(vPos.x * 30.0 + vPos.y * 30.0 + uTime * 20.0 * uSpeed);
+                    float hue = uHueShift + uTime * 0.02 * uSpeed;
+                    vec3 rainbow = hsv2rgb(vec3(hue, 0.9, 0.6));
+                    col = mix(uBaseColor, rainbow, 0.7 * abs(sparkle));
+                  }
+                  col = mix(col, 1.0 - col, uInvert);
+                  col *= uBrightness;
+                  gl_FragColor = vec4(col, 0.9);
+                }
+              `,
+                transparent: true,
+                side: THREE.DoubleSide,
+            });
+        }
+
         for (let i = 0; i < satelliteCount; i++) {
             const c = seededColor();
             const satBrightness = 0.3 + 0.7 * rand();
@@ -1331,14 +1091,10 @@
                     satGeo = new THREE.TetrahedronGeometry(size);
                     break;
             }
-            const satMat = new THREE.MeshStandardMaterial({
-                color: c,
-                emissive: c,
-                emissiveIntensity: 0.3 + 0.5 * rand(),
-                roughness: 0.1 + 0.8 * rand(),
-                metalness: 0.1 + 0.9 * rand(),
-            });
+            const satMat = createSatelliteShader(c, satInvert, satBrightness);
             const sat = new THREE.Mesh(satGeo, satMat);
+            sat.castShadow = true;
+            sat.receiveShadow = true;
             const angle = randRange(0, Math.PI * 2);
             const radius = randRange(1.8, 6.0);
             const heightOffset = randRange(-2.0, 2.0);
@@ -1346,23 +1102,23 @@
             const phase = randRange(0, Math.PI * 2);
             const orbitTilt = randRange(-0.8, 0.8);
             sat.userData = {
-                angle, radius, heightOffset, speed, phase, orbitTilt,
+                angle,
+                radius,
+                heightOffset,
+                speed,
+                phase,
+                orbitTilt,
                 brightness: satBrightness,
                 invert: satInvert,
                 baseColor: c.clone(),
+                mat: satMat,
             };
-            if (satInvert) {
-                sat.material.color.setRGB(1 - c.r, 1 - c.g, 1 - c.b);
-                sat.material.emissive.setRGB(1 - c.r * 0.3, 1 - c.g * 0.3, 1 - c.b * 0.3);
-            }
-            sat.material.color.multiplyScalar(satBrightness);
-            sat.material.emissive.multiplyScalar(satBrightness);
             scene.add(sat);
             satellites.push(sat);
         }
 
         const foldGroups = [];
-        const foldCount = randInt(4, 12);
+        const foldCount = randInt(1, 8);
         for (let i = 0; i < foldCount; i++) {
             const foldGroup = new THREE.Group();
             const planesPerGroup = randInt(3, 8);
@@ -1372,7 +1128,7 @@
                 const segW = randInt(2, 6);
                 const segH = randInt(2, 6);
                 const geometry = new THREE.PlaneGeometry(w, h, segW, segH);
-                const brightness = 0.2 + rand() * 0.8;
+                const brightness = 0.2 + rand() * 0.6;
                 const c = seededColor();
                 const material = new THREE.MeshPhongMaterial({
                     color: c,
@@ -1383,15 +1139,15 @@
                     emissive: c.clone().multiplyScalar(0.2 + rand() * 0.3),
                 });
                 const plane = new THREE.Mesh(geometry, material);
-                plane.position.set(
-                    randRange(-30, 30),
-                    randRange(-20, 20),
-                    randRange(-30, 30)
-                );
+                plane.castShadow = false;
+                plane.receiveShadow = false;
+                plane.position.set(randRange(-30, 30), randRange(-20, 20), randRange(-30, 30));
                 plane.userData = {
                     originalPos: plane.position.clone(),
                     foldPhase: randRange(0, Math.PI * 4),
                     baseBrightness: brightness,
+                    colorShift: randRange(0, 0.5),
+                    hueSpeed: randRange(0.02, 0.08),
                 };
                 foldGroup.add(plane);
             }
@@ -1424,7 +1180,7 @@
                     geometry = new THREE.DodecahedronGeometry(randRange(1, 4));
                     break;
             }
-            const brightness = 0.3 + rand() * 0.7;
+            const brightness = 0.3 + rand() * 0.4;
             const c = seededColor();
             const material = new THREE.MeshPhongMaterial({
                 color: c,
@@ -1434,26 +1190,23 @@
                 emissive: c.clone().multiplyScalar(0.1 + rand() * 0.3),
             });
             const shape = new THREE.Mesh(geometry, material);
-            shape.position.set(
-                randRange(-40, 40),
-                randRange(-30, 30),
-                randRange(-40, 40)
-            );
+            shape.castShadow = false;
+            shape.receiveShadow = false;
+            shape.position.set(randRange(-40, 40), randRange(-30, 30), randRange(-40, 40));
             shape.userData = {
                 originalPos: shape.position.clone(),
-                rotationSpeed: new THREE.Vector3(
-                    randRange(-0.03, 0.03),
-                    randRange(-0.03, 0.03),
-                    randRange(-0.03, 0.03)
-                ),
+                rotationSpeed: new THREE.Vector3(randRange(-0.03, 0.03), randRange(-0.03, 0.03), randRange(-0.03, 0.03)),
                 oscillationPhase: randRange(0, Math.PI * 2),
                 baseBrightness: brightness,
+                mat: material,
+                hueOffset: randRange(0, 1),
+                hueSpeed: randRange(0.01, 0.06),
             };
             geometricShapes.push(shape);
             scene.add(shape);
         }
 
-        const particleCount = randInt(3000, 20000);
+        const particleCount = randInt(300, 500);
         const particleGeo = new THREE.BufferGeometry();
         const partPos = new Float32Array(particleCount * 3);
         const partColors = new Float32Array(particleCount * 3);
@@ -1468,7 +1221,7 @@
             partPos[i3 + 1] = r * Math.cos(phi);
             partPos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
             const c = seededColor();
-            const bright = 0.2 + 0.8 * rand();
+            const bright = 0.2 + 0.6 * rand();
             const invert = rand() > 0.5;
             partColors[i3] = invert ? (1 - c.r) * bright : c.r * bright;
             partColors[i3 + 1] = invert ? (1 - c.g) * bright : c.g * bright;
@@ -1499,22 +1252,21 @@
             const seg = randInt(12, 64);
             const ringGeo = new THREE.TorusGeometry(r, t, 8, seg);
             const c = seededColor();
-            const bright = 0.3 + 0.7 * rand();
+            const bright = 0.3 + 0.4 * rand();
             const invert = rand() > 0.5;
             const ringMat = new THREE.MeshBasicMaterial({
-                color: invert ? new THREE.Color(1 - c.r, 1 - c.g, 1 - c.b).multiplyScalar(bright) : c.clone().multiplyScalar(bright),
+                color: invert ? new THREE.Color(1 - c.r, 1 - c.g, 1 - c.b).multiplyScalar(bright) : c.clone().multiplyScalar(
+                    bright),
                 transparent: true,
                 opacity: 0.1 + 0.3 * rand(),
                 wireframe: rand() > 0.5,
             });
             const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.castShadow = false;
+            ring.receiveShadow = false;
             ring.rotation.x = randRange(0, Math.PI * 2);
             ring.rotation.y = randRange(0, Math.PI * 2);
-            ring.position.set(
-                randRange(-2.0, 2.0),
-                randRange(-1.0, 1.0),
-                randRange(-2.0, 2.0)
-            );
+            ring.position.set(randRange(-2.0, 2.0), randRange(-1.0, 1.0), randRange(-2.0, 2.0));
             ring.userData = {
                 rotSpeedX: randRange(-0.8, 0.8),
                 rotSpeedY: randRange(-0.8, 0.8),
@@ -1522,6 +1274,12 @@
                 orbitSpeed: randRange(0.1, 0.9),
                 orbitRadius: randRange(0.3, 2.2),
                 phase: randRange(0, Math.PI * 2),
+                mat: ringMat,
+                hueOffset: randRange(0, 1),
+                hueSpeed: randRange(0.02, 0.08),
+                baseColor: c.clone(),
+                invert: invert,
+                bright: bright,
             };
             scene.add(ring);
             rings.push(ring);
@@ -1562,7 +1320,7 @@
                     gl_FragColor.w *= pow(gl_FragCoord.z, 20.0);
                     gl_FragColor = mix(gl_FragColor, vec4(fogColor, gl_FragColor.w), fogFactor);
                 }
-            `
+            `,
         };
 
         const cloudFog = new THREE.Fog(0x4584b4, -100, 3000);
@@ -1571,28 +1329,21 @@
                 map: { value: cloudTexture },
                 fogColor: { value: cloudFog.color },
                 fogNear: { value: cloudFog.near },
-                fogFar: { value: cloudFog.far }
+                fogFar: { value: cloudFog.far },
             },
             vertexShader: cloudShader.vertexShader,
             fragmentShader: cloudShader.fragmentShader,
             depthWrite: false,
             depthTest: false,
-            transparent: true
+            transparent: true,
         });
 
         const cloudCount = randInt(2000, 8000);
         const cloudGeos = [];
         for (let i = 0; i < cloudCount; i++) {
-            const planeGeo = new THREE.PlaneGeometry(
-                randRange(20, 80),
-                randRange(20, 80)
-            );
+            const planeGeo = new THREE.PlaneGeometry(randRange(20, 80), randRange(20, 80));
             const obj = new THREE.Object3D();
-            obj.position.set(
-                randRange(-500, 500),
-                randRange(-200, -20),
-                randRange(-500, 500)
-            );
+            obj.position.set(randRange(-500, 500), randRange(-200, -20), randRange(-500, 500));
             obj.rotation.z = randRange(0, Math.PI * 2);
             const sc = randRange(0.5, 2.0);
             obj.scale.set(sc, sc, sc);
@@ -1615,123 +1366,163 @@
 
         function animate() {
             const elapsed = clock.getElapsedTime();
-
+        
             controls.update();
-
-            if (audioCtx && !isMuted && soundNodes.length > 0) {
-                updateObjectSounds();
-            }
-
+        
             bgMat.uniforms.uTime.value = elapsed;
             mainMat.uniforms.uTime.value = elapsed;
+            mainMat.uniforms.uShadowMatrix.value = keyLight.shadow.matrix;
+        
+            const seedChaos = motion.chaosFactor || 1.0;
+            const ambientHue = (elapsed * 0.03 * seedChaos) % 1.0;
+            ambientLight.color.setHSL(ambientHue, 0.8, 0.12);
+            ambientLight.intensity = 0.2 + 0.15 * Math.sin(elapsed * 1.2 * seedChaos);
+            const pulseFactor = Math.sin(elapsed * motion.pulseSpeed * 0.5) * 0.5 + 0.5;
+        
+            mainMesh.rotation.x = elapsed * motion.rotSpeedX * 0.3 + Math.sin(elapsed * 0.2 * seedChaos) * 0.15;
+            mainMesh.rotation.y = elapsed * motion.rotSpeedY * 0.3 + Math.cos(elapsed * 0.25 * seedChaos) * 0.15;
+            mainMesh.rotation.z = elapsed * motion.rotSpeedZ * 0.3 + Math.sin(elapsed * 0.15) * 0.1;
 
-            mainMesh.rotation.x = elapsed * motion.rotSpeedX * 0.3;
-            mainMesh.rotation.y = elapsed * motion.rotSpeedY * 0.3;
-            mainMesh.rotation.z = elapsed * motion.rotSpeedZ * 0.3;
-            const bob = Math.sin(elapsed * motion.bobSpeed) * motion.bobAmp * 0.4;
+            
+            const bob = Math.sin(elapsed * motion.bobSpeed) * motion.bobAmp * 0.4 + Math.cos(elapsed * 1.2) * 0.05;
             mainMesh.position.y = bob;
-            const chaosOffset = Math.sin(elapsed * motion.chaosFactor * 0.5) * 0.3;
+            const chaosOffset = Math.sin(elapsed * seedChaos * 0.5) * 0.3 + Math.cos(elapsed * 0.3) * 0.1;
             mainMesh.position.x = chaosOffset;
-
+            mainMesh.position.z = Math.sin(elapsed * 0.4) * 0.2;
+        
             wireMesh.rotation.copy(mainMesh.rotation);
             wireMesh.position.copy(mainMesh.position);
-
+            const wireScale = 1 + 0.03 * Math.sin(elapsed * 3.0);
+            wireMesh.scale.set(wireScale, wireScale, wireScale);
+        
             for (const sat of satellites) {
-                const { angle, radius, heightOffset, speed, phase, orbitTilt, brightness, invert, baseColor } = sat.userData;
-                const a = angle + elapsed * speed * 0.5;
-                const x = Math.cos(a) * radius;
-                const z = Math.sin(a) * radius;
-                const y = heightOffset + Math.sin(elapsed * speed * 0.7 + phase) * 0.6;
+                const { angle, radius, heightOffset, speed, phase, orbitTilt, mat } = sat.userData;
+                const a = angle + elapsed * speed * 0.4 + Math.sin(elapsed * 0.1 + phase) * 0.2;
+                const currentRadius = radius + Math.sin(elapsed * 0.5 + phase) * 0.4;
+                const x = Math.cos(a) * currentRadius;
+                const z = Math.sin(a) * currentRadius;
+                const y = heightOffset + Math.sin(elapsed * speed * 0.7 + phase) * 0.8 + Math.cos(elapsed * 0.3) * 0.3;
+
                 sat.position.set(x, y, z);
-                sat.rotation.x = elapsed * 0.5 + phase + orbitTilt;
-                sat.rotation.y = elapsed * 0.3 + phase * 0.5;
-                sat.rotation.z = orbitTilt * 0.5;
-                const scale = 1 + 0.25 * Math.sin(elapsed * 0.6 + phase);
+                sat.rotation.x = elapsed * 0.5 + phase + orbitTilt + Math.sin(elapsed + phase);
+                sat.rotation.y = elapsed * 0.3 + phase * 0.5 + Math.cos(elapsed * 0.8);
+                sat.rotation.z = orbitTilt * 0.5 + Math.sin(elapsed * 0.4);
+
+                const scale = 1 + 0.35 * Math.sin(elapsed * 0.8 + phase) * pulseFactor;
                 sat.scale.set(scale, scale, scale);
-
-                const brightPulse = 0.7 + 0.3 * Math.sin(elapsed * 0.5 + phase);
-                const finalBright = brightness * brightPulse;
-                if (invert) {
-                    sat.material.color.setRGB(1 - baseColor.r, 1 - baseColor.g, 1 - baseColor.b);
-                } else {
-                    sat.material.color.copy(baseColor);
-                }
-                sat.material.color.multiplyScalar(finalBright);
-                sat.material.emissive.copy(sat.material.color).multiplyScalar(0.3);
+            
+                if (mat.uniforms) mat.uniforms.uTime.value = elapsed;
             }
-
+        
             foldGroups.forEach((group) => {
                 group.children.forEach((plane) => {
                     const userData = plane.userData;
-                    const foldAmount = Math.sin(elapsed * 0.5 + userData.foldPhase) * 0.8;
-                    plane.rotation.x = foldAmount;
-                    plane.rotation.y = Math.cos(elapsed * 0.3 + userData.foldPhase) * 0.6;
-                    plane.rotation.z = Math.sin(elapsed * 0.7 + userData.foldPhase) * 0.4;
-                    plane.position.copy(userData.originalPos);
-                    plane.position.x += Math.sin(elapsed * 0.4 + userData.foldPhase) * 8;
-                    plane.position.y += Math.cos(elapsed * 0.6 + userData.foldPhase) * 6;
-                    plane.position.z += Math.sin(elapsed * 0.8 + userData.foldPhase) * 12;
-                    const brightnessModulation = Math.sin(elapsed * 2 + userData.foldPhase) * 0.3 + 0.7;
-                    const brightness = userData.baseBrightness * brightnessModulation;
-                    plane.material.color.setRGB(brightness, brightness, brightness);
-                    plane.material.emissive.setRGB(brightness * 0.3, brightness * 0.3, brightness * 0.3);
-                });
-                group.rotation.y = Math.sin(elapsed * 0.2) * 0.3;
-            });
+                    const foldAmount = Math.sin(elapsed * 0.5 + userData.foldPhase) * 1.2;
+                    plane.rotation.x = foldAmount + Math.sin(elapsed * 0.2) * 0.2;
+                    plane.rotation.y = Math.cos(elapsed * 0.3 + userData.foldPhase) * 0.8;
+                    plane.rotation.z = Math.sin(elapsed * 0.7 + userData.foldPhase) * 0.6;
 
+                    plane.position.copy(userData.originalPos);
+                    plane.position.x += Math.sin(elapsed * 0.4 + userData.foldPhase) * 10 + Math.cos(elapsed * 0.2) * 2;
+                    plane.position.y += Math.cos(elapsed * 0.6 + userData.foldPhase) * 8 + Math.sin(elapsed * 0.3) * 2;
+                    plane.position.z += Math.sin(elapsed * 0.8 + userData.foldPhase) * 14;
+
+                    const brightnessModulation = Math.sin(elapsed * 2.5 + userData.foldPhase) * 0.35 + 0.65;
+                    const brightness = Math.min(0.9, userData.baseBrightness * brightnessModulation);
+                    const hue = (userData.colorShift + elapsed * userData.hueSpeed * 0.8) % 1;
+                    const col = new THREE.Color().setHSL(hue, 0.85 + 0.15 * Math.sin(elapsed * 0.5 + userData.foldPhase), brightness);
+
+                    plane.material.color.copy(col);
+                    plane.material.emissive.copy(col).multiplyScalar(0.4 + 0.4 * Math.sin(elapsed * 0.7 + userData.foldPhase));
+                });
+                group.rotation.y = Math.sin(elapsed * 0.2) * 0.4 + Math.cos(elapsed * 0.1) * 0.2;
+                group.rotation.x = Math.cos(elapsed * 0.15) * 0.15;
+            });
+        
             geometricShapes.forEach((shape) => {
                 const userData = shape.userData;
-                shape.rotation.x += userData.rotationSpeed.x;
-                shape.rotation.y += userData.rotationSpeed.y;
+                shape.rotation.x += userData.rotationSpeed.x * (1 + pulseFactor * 0.5);
+                shape.rotation.y += userData.rotationSpeed.y * (1 + pulseFactor * 0.5);
                 shape.rotation.z += userData.rotationSpeed.z;
+
                 shape.position.copy(userData.originalPos);
-                shape.position.x += Math.sin(elapsed * 0.5 + userData.oscillationPhase) * 15;
-                shape.position.y += Math.cos(elapsed * 0.7 + userData.oscillationPhase) * 12;
-                shape.position.z += Math.sin(elapsed * 0.9 + userData.oscillationPhase) * 8;
-                const brightnessModulation = Math.sin(elapsed * 3 + userData.oscillationPhase) * 0.4 + 0.6;
-                const brightness = userData.baseBrightness * brightnessModulation;
-                shape.material.color.setRGB(brightness, brightness, brightness);
-                shape.material.emissive.setRGB(brightness * 0.2, brightness * 0.2, brightness * 0.2);
-                const scale = 1 + Math.sin(elapsed * 2 + userData.oscillationPhase) * 0.3;
+                shape.position.x += Math.sin(elapsed * 0.5 + userData.oscillationPhase) * 18 + Math.cos(elapsed * 0.3) * 4;
+                shape.position.y += Math.cos(elapsed * 0.7 + userData.oscillationPhase) * 14 + Math.sin(elapsed * 0.4) * 4;
+                shape.position.z += Math.sin(elapsed * 0.9 + userData.oscillationPhase) * 10;
+
+                const brightnessModulation = Math.sin(elapsed * 3.5 + userData.oscillationPhase) * 0.45 + 0.55;
+                const brightness = Math.min(0.85, userData.baseBrightness * brightnessModulation);
+                const hue = (userData.hueOffset + elapsed * userData.hueSpeed) % 1;
+                const col = new THREE.Color().setHSL(hue, 0.85 + 0.15 * Math.sin(elapsed * 0.5 + userData.oscillationPhase), brightness * 0.7);
+
+                shape.material.color.copy(col);
+                shape.material.emissive.copy(col).multiplyScalar(0.4 + 0.4 * Math.sin(elapsed * 0.8 + userData.oscillationPhase));
+
+                const scale = 1 + Math.sin(elapsed * 2.5 + userData.oscillationPhase) * 0.4;
                 shape.scale.setScalar(scale);
             });
-
+        
             const pos = particleSystem.geometry.attributes.position.array;
             for (let i = 0; i < particleCount; i++) {
                 const i3 = i * 3;
-                pos[i3] += Math.sin(elapsed * 0.1 + i * 0.001 + motion.chaosFactor) * 0.0006;
-                pos[i3 + 1] += Math.cos(elapsed * 0.08 + i * 0.0013 + motion.chaosFactor) * 0.0006;
-                pos[i3 + 2] += Math.sin(elapsed * 0.09 + i * 0.0017 + motion.chaosFactor) * 0.0006;
+                const px = pos[i3];
+                const py = pos[i3 + 1];
+                const pz = pos[i3 + 2];
+            
+                const angleStep = 0.0008 * seedChaos;
+                const cosA = Math.cos(angleStep);
+                const sinA = Math.sin(angleStep);
+                pos[i3] = px * cosA - pz * sinA;
+                pos[i3 + 2] = px * sinA + pz * cosA;
+            
+                pos[i3] += Math.sin(elapsed * 0.15 + i * 0.001) * 0.0008;
+                pos[i3 + 1] += Math.cos(elapsed * 0.12 + i * 0.0013) * 0.0008;
+                pos[i3 + 2] += Math.sin(elapsed * 0.14 + i * 0.0017) * 0.0008;
+            
                 const r = Math.sqrt(pos[i3] * pos[i3] + pos[i3 + 1] * pos[i3 + 1] + pos[i3 + 2] * pos[i3 + 2]);
-                if (r > spread * 1.8) {
-                    pos[i3] *= 0.98;
-                    pos[i3 + 1] *= 0.98;
-                    pos[i3 + 2] *= 0.98;
+                if (r > spread * 1.9 || r < spread * 0.2) {
+                    pos[i3] *= 0.97;
+                    pos[i3 + 1] *= 0.97;
+                    pos[i3 + 2] *= 0.97;
                 }
             }
             particleSystem.geometry.attributes.position.needsUpdate = true;
-            particleSystem.rotation.y = elapsed * 0.015;
-            particleSystem.rotation.x = Math.sin(elapsed * 0.008 + motion.chaosFactor) * 0.08;
-
+            particleSystem.rotation.y = elapsed * 0.02;
+            particleSystem.rotation.x = Math.sin(elapsed * 0.01 + seedChaos) * 0.12;
+        
             for (const ring of rings) {
-                const { rotSpeedX, rotSpeedY, rotSpeedZ, orbitSpeed, orbitRadius, phase } = ring.userData;
-                ring.rotation.x += rotSpeedX * 0.015;
-                ring.rotation.y += rotSpeedY * 0.015;
-                ring.rotation.z += rotSpeedZ * 0.015;
-                const a = elapsed * orbitSpeed + phase;
-                ring.position.x = Math.cos(a) * orbitRadius + Math.sin(elapsed * 0.2 + phase) * 0.2;
-                ring.position.z = Math.sin(a) * orbitRadius + Math.cos(elapsed * 0.3 + phase) * 0.2;
-                ring.position.y = Math.sin(elapsed * 0.3 + phase) * 0.4 + Math.cos(elapsed * 0.2 + phase) * 0.2;
-                const sc = 1 + 0.15 * Math.sin(elapsed * 0.4 + phase);
-                ring.scale.set(sc, sc, sc);
-            }
+                const { rotSpeedX, rotSpeedY, rotSpeedZ, orbitSpeed, orbitRadius, phase, mat, baseColor, invert, bright, hueSpeed, hueOffset } = ring.userData;
 
-            const cloudPos = ((Date.now() - Date.now()) * 0.03) % 8000;
+                ring.rotation.x += rotSpeedX * 0.02;
+                ring.rotation.y += rotSpeedY * 0.02;
+                ring.rotation.z += rotSpeedZ * 0.02;
+
+                const a = elapsed * orbitSpeed + phase;
+                ring.position.x = Math.cos(a) * (orbitRadius + Math.sin(elapsed * 0.3 + phase) * 0.5) + Math.sin(elapsed * 0.25 + phase) * 0.3;
+                ring.position.z = Math.sin(a) * (orbitRadius + Math.cos(elapsed * 0.3 + phase) * 0.5) + Math.cos(elapsed * 0.35 + phase) * 0.3;
+                ring.position.y = Math.sin(elapsed * 0.4 + phase) * 0.6 + Math.cos(elapsed * 0.25 + phase) * 0.3;
+
+                const sc = 1 + 0.25 * Math.sin(elapsed * 0.6 + phase) * pulseFactor;
+                ring.scale.set(sc, sc, sc);
+            
+                const hue = (hueOffset + elapsed * hueSpeed) % 1;
+                const sat = 0.85 + 0.15 * Math.sin(elapsed * 0.4 + phase);
+                const light = Math.min(0.65, bright * 0.65);
+                const col = new THREE.Color().setHSL(hue, sat, light);
+
+                if (invert) {
+                    mat.color.setRGB(1 - col.r, 1 - col.g, 1 - col.b);
+                } else {
+                    mat.color.copy(col);
+                }
+            }
+        
+            const cloudPos = (elapsed * 60.0) % 8000;
             cloudMesh.position.z = -cloudPos + 4000;
             cloudMesh2.position.z = -cloudPos + 2000;
-
-            bloomPass.strength = 0.2 + 0.4 * (0.5 + 0.5 * Math.sin(elapsed * 0.05 + motion.chaosFactor));
-
+        
+            bloomPass.strength = 0.18 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 0.08 + seedChaos)) * pulseFactor;
+        
             composer.render();
             requestAnimationFrame(animate);
         }
@@ -1745,22 +1536,10 @@
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
             composer.setSize(w, h);
-
-            if (audioCtx && listener) {
-                try {
-                    if (listener.positionX !== undefined) {
-                        listener.positionX.value = 0;
-                        listener.positionY.value = 0;
-                        listener.positionZ.value = 0;
-                    } else if (listener.setPosition) {
-                        listener.setPosition(0, 0, 0);
-                    }
-                } catch (e) {}
-            }
         }
         window.addEventListener('resize', onResize);
         if (window.ResizeObserver) {
-            const ro = new ResizeObserver(function() { onResize(); });
+            const ro = new ResizeObserver(() => onResize());
             ro.observe(container);
         }
 
