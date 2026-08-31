@@ -68,10 +68,18 @@
             border: var(--border-width) solid rgba(255, 255, 255, 0.06);
             font-family: 'Courier New', monospace;
             letter-spacing: 0.04em;
-            pointer-events: none;
-            user-select: none;
+            pointer-events: auto;
+            user-select: all;
+            cursor: pointer;
             backdrop-filter: blur(2px);
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
+
+        #seed-display:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.25);
+        }
+
         #visitor-count {
             position: fixed;
             bottom: 1.2em;
@@ -276,7 +284,7 @@
         localStorage.setItem('chaos_visitors', String(visitorCount));
         document.getElementById('visitor-count').textContent = 'visitors: ' + visitorCount;
 
-        const BASE_SEED = '00000332803236129950523940426038972794344903620302980052269479243684112304572499038931974543768580869346520415294131553407209503';
+        const BASE_SEED = '01201703133402783968746655220205750928394224447261664969461955935045753821250050802777767601804597714041962669080878193985841216';
         const SEED_RAW = BASE_SEED + String(visitorCount).padStart(10, '0');
 
         function splitmix64(a) {
@@ -306,7 +314,31 @@
         const seed64 = seedTo64(SEED_RAW);
         const rng = splitmix64(seed64);
 
-        document.getElementById('seed-display').textContent = 'seed: ' + SEED_RAW.slice(0, 20) + '...';
+        const seedDisplay = document.getElementById('seed-display');
+
+        // Dynamically slice seed for mobile screens, full seed for desktop
+        function updateSeedDisplay() {
+            if (window.innerWidth <= 600) {
+                seedDisplay.textContent = 'seed: ' + SEED_RAW.slice(0, 14) + '...' + SEED_RAW.slice(-6);
+            } else {
+                seedDisplay.textContent = 'seed: ' + SEED_RAW;
+            }
+        }
+
+        updateSeedDisplay();
+
+        seedDisplay.addEventListener('click', () => {
+            navigator.clipboard.writeText(SEED_RAW).then(() => {
+                seedDisplay.textContent = 'Copied to clipboard!';
+
+                setTimeout(() => {
+                    updateSeedDisplay();
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy seed: ', err);
+                alert('Could not copy seed automatically.');
+            });
+        });
 
         function rand() { return rng(); }
         function randRange(min, max) { return min + (max - min) * rand(); }
@@ -1536,6 +1568,7 @@
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
             composer.setSize(w, h);
+            updateSeedDisplay();
         }
         window.addEventListener('resize', onResize);
         if (window.ResizeObserver) {
