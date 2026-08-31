@@ -58,9 +58,11 @@ function getPiDigits(startPos, count) {
 async function generateDailySeed(visitorCount) {
   const randomPool = generateRandomPool();
   const timestamp = Date.now();
-  const combined = randomPool + visitorCount + timestamp;
+  
+  const combined = randomPool + visitorCount.toString() + timestamp;
   const hash = sha512(combined);
-  const piPosition = BigInt('0x' + hash.slice(0, 12)) % 1000000000000n;
+  
+  const piPosition = BigInt('0x' + hash) % 1000000000000n;
   const piDigits = getPiDigits(Number(piPosition), 128);
 
   const seeds = [];
@@ -70,7 +72,7 @@ async function generateDailySeed(visitorCount) {
 
   let product = 1n;
   for (const seed of seeds) {
-    product = (product * seed) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFn;
+    product *= seed;
   }
 
   let sum = 0n;
@@ -78,61 +80,51 @@ async function generateDailySeed(visitorCount) {
     sum += seed;
   }
 
-  const finalSeed = (product ^ sum) & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFn;
-  return finalSeed.toString(16).padStart(128, '0');
+  const finalSeedInt = product ^ sum;
+  
+  let finalSeedString = finalSeedInt.toString(10);
+  
+  if (finalSeedString.length < 128) {
+      finalSeedString = finalSeedString.padStart(128, '0');
+  } else if (finalSeedString.length > 128) {
+      finalSeedString = finalSeedString.slice(0, 128); 
+  }
+  
+  return finalSeedString;
 }
 
 async function main() {
   try {
-    let html = fs.readFileSync('index.html', 'utf8');
-    let visitorCount = Math.floor(Math.random() * 100000) + 1;
+    let visitorCount = parseInt(process.argv[2], 10);
+    if (isNaN(visitorCount)) {
+      visitorCount = 1042;
+      console.log('Notice: No valid visitor count provided via CLI. Defaulting to 1042.');
+    }
     
-    console.log('Generating seed with visitor count: ' + visitorCount);
+    let html = fs.readFileSync('index.html', 'utf8');
+    
+    console.log('Generating seed with actual visitor count: ' + visitorCount);
     
     const seed = await generateDailySeed(visitorCount);
     const seedHash = crypto.createHash('sha256').update(seed).digest('hex');
     
-    const newBaseSeed = seed.slice(0, 32);
-    html = html.replace(/const BASE_SEED = '([^']+)';/, 'const BASE_SEED = \'' + newBaseSeed + '\';');
-    console.log('Updated BASE_SEED to: ' + newBaseSeed);
-    
-    let songFeatures = {};
-    try {
-      const featuresData = fs.readFileSync('song_features.json', 'utf8');
-      songFeatures = JSON.parse(featuresData);
-      console.log('Loaded song features for ' + Object.keys(songFeatures).length + ' songs');
-    } catch (e) {
-      console.log('No song_features.json found, using default features');
-      songFeatures = {
-        'song-1.mp3': { duration: 30, mean_amplitude: 0.5, peak_frequency: 440, frequency_bands: { bass: 100, mid: 200, treble: 50 } },
-        'song-2.mp3': { duration: 30, mean_amplitude: 0.6, peak_frequency: 880, frequency_bands: { bass: 80, mid: 300, treble: 70 } },
-        'song-3.mp3': { duration: 30, mean_amplitude: 0.4, peak_frequency: 220, frequency_bands: { bass: 150, mid: 100, treble: 30 } }
-      };
-    }
-    
-    const featuresString = JSON.stringify(songFeatures);
-    const featuresBase64 = Buffer.from(featuresString).toString('base64');
-    
-    html = html.replace(/const SONG_FEATURES = '';/, 'const SONG_FEATURES = \'' + featuresBase64 + '\';');
-    console.log('Injected song features (' + (featuresBase64.length / 1024).toFixed(1) + ' KB base64)');
+    html = html.replace(/const BASE_SEED = '([^']+)';/, 'const BASE_SEED = \'' + seed + '\';');
+    console.log('Updated BASE_SEED to 128-digit numeric code.');
     
     fs.writeFileSync('index.html', html);
     
     const seedData = {
       seed: seed,
       generatedAt: new Date().toISOString(),
-      visitorCount: visitorCount,
+      visitorFactor: visitorCount,
       seedHash: seedHash,
-      preview: seed.slice(0, 32) + '...',
-      songCount: Object.keys(songFeatures).length
+      preview: seed.slice(0, 32) + '...'
     };
     
     fs.writeFileSync('daily-seed.json', JSON.stringify(seedData, null, 2));
     
-    console.log('\nDaily seed generated and injected successfully!');
-    console.log('Seed: ' + seed.slice(0, 32) + '...');
-    console.log('Songs analyzed: ' + Object.keys(songFeatures).length);
-    console.log('HTML size: ' + (fs.statSync('index.html').size / 1024).toFixed(1) + ' KB');
+    console.log('\nDaily numeric base seed generated and injected successfully!');
+    console.log('Base Seed (' + seed.length + ' digits):\n' + seed);
     
   } catch (error) {
     console.error('Error generating seed:', error);
