@@ -15,9 +15,8 @@ reboots it.
     [**Scrambled Linear Pseudorandom Number Generators**](https://vigna.di.unimi.it/ftp/papers/ScrambledLinear.pdf).
     *ACM Transactions on Mathematical Software (TOMS)*, 47(4), Article 36, pp. 1–32 (arXiv:1805.01407).
     
-* **Custom Shaders & Coherent Noise:** It tears open custom GLSL vertex and fragment shaders intertwined with
-  a weeping hyperspace background shader that warps, twists, and hallucinates color-shifts based on raw cosmic
-  noise. Underneath, this computes manic pseudo-random gradient vectors across a lattice grid, interpolating them
+* **Custom Shaders:** It tears open custom GLSL vertex and fragment shaders intertwined with
+  a weeping hyperspace background shader that warps, twists, and hallucinates color-shifts. Underneath, this computes manic pseudo-random gradient vectors across a lattice grid, interpolating them
   using the quintic smoothstep polynomial $6t^5 - 15t^4 + 10t^3$ to keep the tearing dimensions mathematically
   continuous across first and second derivatives.
   
@@ -35,10 +34,10 @@ reboots it.
 ## How to run this locally
 
 Just clone the repo and run `index.html`, yeah nothing more nothing less. No local 
-servers, no node constructs, no mortal command lines—just click and watch the universe unravel.
+servers, no node constructs, no mortal command lines—just click and watch whatever is being rendered.
 
 ## Tech Stack
 
 * **Three.js**
 * **GLSL Shaders**
-* **Pure unadulterated cosmic madness**
+* **Pure unadulterated madness**( I don't know what shape it could generate but theoretically it might IDK)
