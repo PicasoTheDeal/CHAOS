@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHAOS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *,
         *::before,
@@ -13,10 +15,20 @@
             padding: 0;
         }
         :root {
-            --bg: #0b0b0b;
-            --border: #2a2a2a;
+            --bg: #233D4D;
+            --border: rgba(255, 255, 255, 0.14);
             --text: #f0f0f0;
             --border-width: 1px;
+
+            --white: #ffffff;
+            --lime-cream: #e7ff8d;
+            --chartreuse: #ceff1a;
+            --forest-moss: #67800d;
+
+            --font-mono: 'JetBrains Mono','SF Mono','Cascadia Code','Consolas',monospace;
+            --font-pixel: 'Press Start 2P', system-ui;
+
+            --dune-bg: none;
         }
         html,
         body {
@@ -56,46 +68,45 @@
             border: none;
             background: transparent;
         }
-        #seed-display {
-            position: fixed;
-            bottom: 1.2em;
-            right: 1.6em;
-            z-index: 99;
-            font-size: 0.55rem;
-            color: rgba(255, 255, 255, 0.12);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.3em 0.7em;
-            border: var(--border-width) solid rgba(255, 255, 255, 0.06);
-            font-family: 'Courier New', monospace;
-            letter-spacing: 0.04em;
-            pointer-events: auto;
-            user-select: all;
-            cursor: pointer;
-            backdrop-filter: blur(2px);
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
 
-        #seed-display:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.25);
-        }
-
+        #seed-display,
         #visitor-count {
             position: fixed;
             bottom: 1.2em;
-            left: 1.6em;
             z-index: 99;
             font-size: 0.55rem;
-            color: rgba(255, 255, 255, 0.12);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.3em 0.7em;
-            border: var(--border-width) solid rgba(255, 255, 255, 0.06);
-            font-family: 'Courier New', monospace;
+            color: rgba(255, 255, 255, 0.22);
+            padding: 0.35em 0.75em;
+            border: var(--border-width) solid rgba(255, 255, 255, 0.08);
+            font-family: var(--font-mono);
             letter-spacing: 0.04em;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            background-color: #233D4D;
+            background-image:
+                linear-gradient(rgba(35,61,77,0.72), rgba(35,61,77,0.72)),
+                var(--dune-bg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #seed-display {
+            right: 1.6em;
+            pointer-events: auto;
+            user-select: all;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        #seed-display:hover {
+            color: rgba(206, 255, 26, 0.65);
+            border-color: rgba(206, 255, 26, 0.35);
+        }
+        #visitor-count {
+            left: 1.6em;
             pointer-events: none;
             user-select: none;
-            backdrop-filter: blur(2px);
         }
+
         ::-webkit-scrollbar {
             display: none;
         }
@@ -103,7 +114,7 @@
             #seed-display,
             #visitor-count {
                 font-size: 0.4rem;
-                padding: 0.2em 0.5em;
+                padding: 0.25em 0.55em;
                 bottom: 0.8em;
             }
             #visitor-count {
@@ -118,95 +129,84 @@
             position: fixed;
             inset: 0;
             z-index: 1000;
-            background: #0b0b0b;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: 'Courier New', monospace;
-            transition: opacity 1.2s ease;
+            font-family: var(--font-mono);
+            transition: opacity 1s ease;
             opacity: 1;
             pointer-events: none;
+            background-color: #233D4D;
+            background-image:
+                linear-gradient(rgba(35,61,77,0.78), rgba(35,61,77,0.78)),
+                var(--dune-bg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         #plymouth.hide {
             opacity: 0;
         }
-        #plymouth-logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #e6edf3;
-            letter-spacing: 0.15em;
-            margin-bottom: 30px;
-            opacity: 0;
-            animation: logoFade 0.8s ease forwards 0.3s;
+
+        .boot-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 26px;
+            padding: 0 24px;
+            width: min(480px, 100%);
         }
-        #plymouth-logo span {
-            color: #5b7a9e;
-            padding: 5px;
+
+        .boot-wordmark {
+            font-family: var(--font-pixel);
+            font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+            letter-spacing: 0.04em;
+            color: var(--white);
         }
-        @keyframes logoFade {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
+        .boot-wordmark .boot-dot { color: var(--chartreuse); }
+        .boot-wordmark .boot-slash {
+            color: rgba(255,255,255,0.4);
+            margin: 0 5px;
+            font-family: var(--font-mono);
+            font-weight: 400;
+            font-size: 0.9em;
+            letter-spacing: 0;
         }
-        #plymouth-lines {
+
+        .boot-sub {
             font-size: 0.7rem;
-            color: #8b949e;
-            line-height: 1.8;
-            text-align: left;
-            max-width: 520px;
-            width: 90%;
-            opacity: 0;
-            animation: linesFade 0.6s ease forwards 0.6s;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
         }
-        @keyframes linesFade {
-            0% { opacity: 0; transform: translateY(8px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        .boot-line {
-            opacity: 0;
-            animation: typeLine 0.4s ease forwards;
-        }
-        .boot-line.success {
-            color: #3fb950;
-        }
-        .boot-line.accent {
-            color: #5b7a9e;
-        }
-        .boot-line.dim {
-            color: #4a5568;
-        }
-        .boot-line .cursor {
-            display: inline-block;
-            width: 6px;
-            height: 10px;
-            background: #5b7a9e;
-            vertical-align: middle;
-            animation: blink 0.8s step-end infinite;
-        }
-        @keyframes typeLine {
-            0% { opacity: 0; transform: translateX(-6px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        #plymouth-progress {
-            margin-top: 25px;
-            width: 240px;
+
+        .boot-bar {
+            width: 100%;
             height: 2px;
-            background: #1c2333;
-            border-radius: 2px;
+            background: rgba(255,255,255,0.08);
             overflow: hidden;
-            opacity: 0;
-            animation: linesFade 0.6s ease forwards 1.2s;
+            position: relative;
+            border: none;
         }
-        #plymouth-progress-bar {
+        .boot-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #3d5068, #5b7a9e, #8b949e);
-            border-radius: 2px;
-            transition: width 0.4s ease;
+            background: var(--chartreuse);
+            box-shadow: 0 0 14px rgba(206,255,26,0.55);
+            transition: width 0.55s cubic-bezier(.22,1,.36,1);
+        }
+
+        .boot-status {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.42);
+            min-height: 1em;
+            transition: color 0.3s ease;
+        }
+        .boot-status::before {
+            content: '// ';
+            color: var(--forest-moss);
         }
     </style>
 </head>
@@ -218,20 +218,106 @@
     </div>
 
     <div id="plymouth">
-        <div id="plymouth-logo">CHAOS <span>v ∞</span></div>
-        <div id="plymouth-lines">
-            <div class="boot-line" style="animation-delay:0.9s;">[ INITIALIZING ENTROPY POOL ]</div>
-            <div class="boot-line" style="animation-delay:1.3s;">[ GENERATING 256-DIGIT SEED ]</div>
-            <div class="boot-line" style="animation-delay:1.7s;">[ EXTRACTING FROM Pi ]</div>
-            <div class="boot-line" style="animation-delay:2.1s;">[ SHA-512 HASHING ]</div>
-            <div class="boot-line success" style="animation-delay:2.5s;">[ SEED GENERATED ]</div>
-            <div class="boot-line accent" style="animation-delay:2.9s;">[ VISUAL ENGINE STARTING ]</div>
-            <div class="boot-line dim" style="animation-delay:3.3s;">[ SYSTEM READY ] <span class="cursor"></span></div>
-        </div>
-        <div id="plymouth-progress">
-            <div id="plymouth-progress-bar"></div>
+        <div class="boot-wrap">
+            <div class="boot-wordmark">CHAOS</div>
+            <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
+            <div class="boot-status" id="boot-status">initializing</div>
         </div>
     </div>
+
+    <script>
+        const DUNE_DARK  = { r: 35,  g: 61,  b: 77  };
+        const DUNE_LIGHT = { r: 255, g: 255, b: 255 };
+
+        function duneElevation(px, py) {
+            const warpX = Math.sin(py * 3.8 + 0.4) * 0.18 + Math.cos(py * 7.5) * 0.05;
+            const warpY = Math.cos(px * 3.2 + 1.1) * 0.15 + Math.sin(px * 6.2) * 0.04;
+            const nx = px + warpX;
+            const ny = py + warpY;
+
+            const ridge1 = Math.sin(nx * 3.4 - ny * 2.6);
+            const ridge2 = Math.cos(nx * 5.8 + ny * 4.5 + ridge1 * 1.4);
+            const ripple = Math.sin(nx * 12.0 - ny * 8.0) * 0.15;
+
+            const baseElevation = (ridge1 * 0.55 + ridge2 * 0.3 + ripple + 1) / 2;
+            const sharpCrest = Math.pow(Math.max(0, Math.min(1, baseElevation)), 1.35);
+            const diagonalSweep = px * 0.4 + py * 0.6;
+
+            return Math.max(0, Math.min(1, sharpCrest * 0.55 + diagonalSweep * 0.45));
+        }
+
+        function paintDune(ctx, w, h, grain){
+            const imgData = ctx.createImageData(w, h);
+            const data = imgData.data;
+            let i = 0;
+            for (let y = 0; y < h; y++){
+                const py = y / h;
+                for (let x = 0; x < w; x++){
+                    const px = x / w;
+                    const t = duneElevation(px, py);
+                    const r = DUNE_DARK.r + t * (DUNE_LIGHT.r - DUNE_DARK.r);
+                    const g = DUNE_DARK.g + t * (DUNE_LIGHT.g - DUNE_DARK.g);
+                    const b = DUNE_DARK.b + t * (DUNE_LIGHT.b - DUNE_DARK.b);
+                    const crestGrit = 1.0 + Math.sin(t * Math.PI) * 0.5;
+                    const noise = (Math.random() - 0.5) * grain * crestGrit;
+                    data[i]     = Math.min(255, Math.max(0, r + noise));
+                    data[i + 1] = Math.min(255, Math.max(0, g + noise));
+                    data[i + 2] = Math.min(255, Math.max(0, b + noise));
+                    data[i + 3] = 255;
+                    i += 4;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function generateDuneDataUrl(){
+            const w = 800, h = 500;
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            paintDune(ctx, w, h, 26);
+            return c.toDataURL('image/jpeg', 0.82);
+        }
+
+        (function applyDuneBackground(){
+            try {
+                const url = generateDuneDataUrl();
+                document.documentElement.style.setProperty('--dune-bg', 'url("' + url + '")');
+            } catch (e) {
+                console.warn('[chaos] dune tile failed', e);
+            }
+        })();
+    </script>
+
+    <script>
+        (function(){
+            const plymouth = document.getElementById('plymouth');
+            const bar      = document.getElementById('boot-bar-fill');
+            const status   = document.getElementById('boot-status');
+            if (!plymouth || !bar || !status) return;
+
+            const stages = [
+                { pct: 15,  label: 'seeding rng',          delay: 260 },
+                { pct: 35,  label: 'hashing',              delay: 520 },
+                { pct: 58,  label: 'building geometry',    delay: 780 },
+                { pct: 82,  label: 'compiling shaders',    delay: 1050 },
+                { pct: 100, label: 'ready',                delay: 1320 }
+            ];
+
+            stages.forEach((s) => {
+                setTimeout(() => {
+                    bar.style.width = s.pct + '%';
+                    status.textContent = s.label;
+                    if (s.pct === 100){
+                        setTimeout(() => {
+                            plymouth.classList.add('hide');
+                            setTimeout(() => { plymouth.style.display = 'none'; }, 1100);
+                        }, 260);
+                    }
+                }, s.delay);
+            });
+        })();
+    </script>
 
     <script type="importmap">
         {
@@ -252,32 +338,6 @@
         import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
         import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
-
-        const plymouth = document.getElementById('plymouth');
-        const progressBar = document.getElementById('plymouth-progress-bar');
-        const bootSteps = [
-            { progress: 10, delay: 300 },
-            { progress: 30, delay: 600 },
-            { progress: 50, delay: 800 },
-            { progress: 70, delay: 1100 },
-            { progress: 85, delay: 1400 },
-            { progress: 95, delay: 1700 },
-            { progress: 100, delay: 2100 },
-        ];
-
-        bootSteps.forEach((step) => {
-            setTimeout(() => {
-                progressBar.style.width = step.progress + '%';
-                if (step.progress === 100) {
-                    setTimeout(() => {
-                        plymouth.classList.add('hide');
-                        setTimeout(() => {
-                            plymouth.style.display = 'none';
-                        }, 1200);
-                    }, 300);
-                }
-            }, step.delay + 500);
-        });
 
         let visitorCount = parseInt(localStorage.getItem('chaos_visitors') || '0');
         visitorCount++;
@@ -403,8 +463,8 @@
         const height = container.clientHeight;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0b0b0b);
-        scene.fog = new THREE.Fog(0x0b0b0b, 50, 200);
+        scene.background = new THREE.Color(0x233D4D);
+        scene.fog = new THREE.Fog(0x233D4D, 50, 200);
 
         const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 200);
         camera.position.set(0, 1.2, 7);
