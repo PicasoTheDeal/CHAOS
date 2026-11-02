@@ -56,7 +56,7 @@ reboots it.
   film grain, duotone dither, how often the palette jumps, how often a jump is a hard cut, the flash and
   scale flinch that land with it, afterimage trail length and bloom. Most seeds land calm or soft; a few go
   wild. It runs on its own SplitMix64 stream, so adding it changed nothing about which shape or palette a
-  seed produces. Press **M** (or the MOOD key in the HUD) to cycle CALM → SOFT → LIVELY → WILD; the change
+  seed produces. Press **M** to cycle CALM → SOFT → LIVELY → WILD; the change
   eases in over a second or so instead of cutting.
 * **Mutation lineage (v2.2):** after the generator, the shape is passed through a seeded lineage of 3–7
   mutators — twist, warp, ripple, value-noise growth, swirl, bulge/pinch, shear and a mirror fold — each
