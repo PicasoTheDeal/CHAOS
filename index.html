@@ -173,62 +173,78 @@
             }
         }
 
+        /* ---- BOOT POSTER: full-bleed two-colour field, the dimension's stats typeset over it ---- */
         #plymouth {
             position: fixed;
             inset: 0;
             z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden;
+            background: #0b0c0b;
             font-family: var(--font-mono);
             transition: opacity 1s ease, visibility 0s linear 1s;
             opacity: 1;
             pointer-events: none;
-            background:
-                radial-gradient(120% 70% at 50% 8%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 100%),
-                linear-gradient(180deg, #0b0c0b 0%, #171817 34%, #2b2d2a 72%, #464a45 100%);
+            --ba: #2b2d2a;            /* colour A of the dimension, set by the module once the seed is hashed */
+            --bb: #ecebe2;            /* colour B */
         }
         #plymouth.hide { opacity: 0; visibility: hidden; }
-        #ply-grain { position: absolute; inset: 0; opacity: .16; background-repeat: repeat; background-size: 200px 200px; }
-        .boot-wrap {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 18px;
-            padding: 0 24px;
-            width: min(460px, 100%);
-            text-align: center;
+        #ply-canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+        #ply-grain { position: absolute; inset: 0; opacity: .08; background-repeat: repeat; background-size: 200px 200px; }
+        .po-ink { color: #fff; mix-blend-mode: difference; }          /* white knocked through the field: inverts whatever is behind it */
+        .po-top, .po-side, .po-log, .po-steps { mix-blend-mode: normal; color: var(--silver); text-shadow: 0 1px 12px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.9); }   /* small type stays legible on the bright patches */
+        .po-top .po-pct { mix-blend-mode: difference; text-shadow: none; color: #fff; }
+        .po-top {
+            position: absolute; top: 0; left: 0; right: 0;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: clamp(16px, 3vw, 36px);
+            font: 600 10px/1 var(--font-mono); letter-spacing: .28em; text-transform: uppercase;
         }
-        .boot-wrap .logo { height: clamp(70px, 12vh, 104px); margin-bottom: 6px; animation: boot-breathe 2.4s ease-in-out infinite; }
-        @keyframes boot-breathe { 0%, 100% { opacity: .85; } 50% { opacity: 1; filter: drop-shadow(0 0 18px rgba(247,245,234,.25)); } }
-        .boot-wordmark {
-            font: 800 clamp(30px, 6vw, 52px)/1 var(--f-d);
-            letter-spacing: -.02em;
-            background: var(--chrome);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            filter: drop-shadow(0 0 22px rgba(247,245,234,.16));
+        .po-brand { display: flex; align-items: center; gap: 12px; }
+        .po-brand .logo { height: 30px; width: auto; }
+        .po-brand .logo path, .po-brand .logo rect { stroke: #fff; }
+        .po-brand .logo rect { fill: #fff; }
+        .po-brand em { font-style: normal; opacity: .55; margin-left: 6px; }
+        .po-pct { font: 800 clamp(28px, 5vw, 60px)/1 var(--f-d); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+        .po-pct small { font-size: .45em; vertical-align: .6em; letter-spacing: 0; }
+        .po-side {
+            position: absolute; left: clamp(14px, 3vw, 36px); top: 50%;
+            transform: translateY(-50%) rotate(180deg);
+            writing-mode: vertical-rl;
+            font: 500 9px/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; white-space: nowrap;
         }
-        .boot-wordmark span { font-size: .42em; letter-spacing: .2em; vertical-align: .9em; margin-left: 4px; }
-        .boot-sub { font: italic 400 clamp(17px, 2.2vw, 21px)/1.3 var(--f-s); color: var(--dim); margin-top: -6px; }
-        .boot-lcd {
-            width: 100%;
-            margin-top: 12px;
-            padding: 14px 16px 16px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, var(--lcd-hi), var(--lcd));
-            box-shadow: inset 0 2px 6px rgba(0,0,0,.45), 0 0 0 3px #1d1f1c, 0 0 0 4px #7f827b, 0 30px 70px rgba(0,0,0,.5);
-            text-align: left;
+        .po-main { position: absolute; left: clamp(40px, 7vw, 110px); right: clamp(16px, 3vw, 36px); top: 50%; transform: translateY(-56%); }
+        .po-word {
+            font: 800 clamp(54px, 13vw, 200px)/.88 var(--f-d);
+            letter-spacing: -.045em; text-transform: uppercase; overflow-wrap: anywhere;
+            animation: word-in .55s var(--ease);
         }
-        .boot-row { display: flex; justify-content: space-between; align-items: center; }
-        .boot-row .seg { font-size: 26px; }
-        .boot-bar { height: 6px; margin: 12px 0 10px; border-radius: 3px; background: rgba(28,33,27,.15); overflow: hidden; }
-        .boot-bar-fill { height: 100%; width: 0%; background: var(--seg); transition: width 0.55s cubic-bezier(.22,1,.36,1); }
-        .boot-status { flex: 1; min-width: 0; font-size: 9.5px; min-height: 1em; white-space: nowrap; overflow: hidden; }
-        .boot-row .lcd-lbl { flex: none; margin-left: 10px; }
-        .boot-foot { font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--faint); margin-top: 6px; }
+        @keyframes word-in { from { transform: translateX(-.08em) skewX(-6deg); letter-spacing: .02em; } to { transform: none; letter-spacing: -.045em; } }
+        .po-sub { margin-top: clamp(10px, 1.6vw, 18px); font: italic 400 clamp(17px, 2.4vw, 30px)/1.25 var(--f-s); color: var(--silver); text-shadow: 0 2px 22px rgba(0,0,0,.7); max-width: 34em; }
+        .po-log {
+            position: absolute; right: clamp(16px, 3vw, 36px); bottom: clamp(58px, 10vh, 100px);
+            text-align: right; max-width: 58vw;
+            font: 500 10px/1.9 var(--font-mono); letter-spacing: .08em;
+        }
+        .po-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: log-in .3s ease-out; }
+        .po-log b { font-weight: 600; opacity: .5; margin-right: 1.2em; }
+        @keyframes log-in { from { transform: translateY(5px); } to { transform: none; } }
+        .po-steps {
+            position: absolute; left: clamp(16px, 3vw, 36px); bottom: clamp(24px, 5vh, 46px);
+            display: flex; gap: clamp(8px, 1.6vw, 22px);
+            font: 600 9px/1 var(--font-mono); letter-spacing: .2em;
+        }
+        .po-steps span { opacity: .28; transition: opacity .3s; }
+        .po-steps span.done { opacity: 1; }
+        .po-steps span.now { opacity: 1; animation: po-blink 1s steps(2, start) infinite; }
+        @keyframes po-blink { to { opacity: .2; } }
+        .po-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.1); }
+        .po-bar div { height: 100%; width: 0; background: var(--bb); box-shadow: 0 0 18px var(--bb); transition: width .6s var(--ease); }
+        @media (max-width: 600px) {
+            .po-log, .po-side { display: none; }
+            .po-main { left: 16px; right: 16px; }
+            .po-steps { flex-wrap: wrap; gap: 8px 12px; right: 16px; }
+            .po-brand em { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -242,23 +258,26 @@
         <a class="brand" href="https://tetstack.dev" aria-label="Tetstack home"><svg class="logo" viewBox="0 0 120 192" fill="none" stroke-linecap="square" aria-hidden="true"><g class="lg-shadow" stroke="#5e625b" fill="none"><path d="M10.5 9 V114.5 H32.5 V9 Z" stroke-width="3" fill="none"/><path d="M44.5 9 V114.5 H74.5 V9 Z" stroke-width="3" fill="none"/><path d="M104.5 9 V114.5 H112.5 V9 Z" stroke-width="2.4" fill="none"/><path d="M42.6 129.2 C55 128.4 76 128.6 90.8 129.6 L91.2 144 C86 143.8 79 143.6 73.2 144.2 L73.6 185.4 C69 185.6 64 185.8 60.4 185.6 L59.8 144.6 C53 144.2 47 144.4 43.2 143.4 Z" stroke-width="3" fill="none"/></g><g class="lg-ink" stroke="#ecebe2" fill="none"><path d="M30 40 V6 H8 V112 H30 V54" stroke-width="3.2"/><rect x="8" y="105" width="22" height="7" stroke="none" fill="#ecebe2"/><rect x="8" y="6" width="22" height="4" stroke="none" fill="#ecebe2"/><path d="M42 70 V6 H72 V112 H42 V82" stroke-width="3.2"/><rect x="42" y="6" width="30" height="6.5" stroke="none" fill="#ecebe2"/><rect x="42" y="103" width="30" height="9" stroke="none" fill="#ecebe2"/><path d="M102 6 H110 V112 H102 Z" stroke-width="2.6"/><rect x="102" y="106" width="8" height="6" stroke="none" fill="#ecebe2"/><path d="M40.2 126.6 C53 125.6 74 125.9 88.4 127 L88.8 141.4 C83.6 141.1 76.6 140.9 70.8 141.6 L71.2 182.8 C66.6 183 61.6 183.2 58 183 L57.4 142 C50.6 141.6 44.6 141.8 40.8 140.8 Z" stroke-width="2.6" fill="none"/></g><g class="lg-ghost" stroke="#b5bba8" fill="none" opacity=".42"><path d="M34.5 10 H37.5 V107 H34.5 Z" stroke-width="1.4" fill="none"/><path d="M77 10 H97 V106 H77 Z" stroke-width="2.6" fill="none"/><rect x="77" y="96" width="20" height="10" stroke="none" fill="#b5bba8"/></g></svg><span class="chrome-t">TETSTACK</span><span class="brand-sub">/ CHAOS</span></a>
         <div class="hud-keys">
             <button class="key" type="button" onclick="location.reload()" aria-label="Reroll the dimension"><span class="ink-red">↻</span><span class="k-txt">Reroll</span></button>
+            <button class="key" type="button" id="mood-key" title="Cycle the mood (M)" aria-label="Cycle the mood"><span class="ink-red">◐</span><span class="k-txt" id="mood-txt">MOOD</span></button>
             <a class="key" href="https://tetstack.dev" aria-label="Back to tetstack.dev"><span class="ink-red">←</span><span class="k-txt">tetstack.dev</span></a>
         </div>
     </header>
 
     <div id="plymouth" role="status" aria-live="polite">
+        <canvas id="ply-canvas" aria-hidden="true"></canvas>
         <div id="ply-grain" aria-hidden="true"></div>
-        <div class="boot-wrap">
-            <svg class="logo" viewBox="0 0 120 192" fill="none" stroke-linecap="square" aria-hidden="true"><g class="lg-shadow" stroke="#5e625b" fill="none"><path d="M10.5 9 V114.5 H32.5 V9 Z" stroke-width="3" fill="none"/><path d="M44.5 9 V114.5 H74.5 V9 Z" stroke-width="3" fill="none"/><path d="M104.5 9 V114.5 H112.5 V9 Z" stroke-width="2.4" fill="none"/><path d="M42.6 129.2 C55 128.4 76 128.6 90.8 129.6 L91.2 144 C86 143.8 79 143.6 73.2 144.2 L73.6 185.4 C69 185.6 64 185.8 60.4 185.6 L59.8 144.6 C53 144.2 47 144.4 43.2 143.4 Z" stroke-width="3" fill="none"/></g><g class="lg-ink" stroke="#ecebe2" fill="none"><path d="M30 40 V6 H8 V112 H30 V54" stroke-width="3.2"/><rect x="8" y="105" width="22" height="7" stroke="none" fill="#ecebe2"/><rect x="8" y="6" width="22" height="4" stroke="none" fill="#ecebe2"/><path d="M42 70 V6 H72 V112 H42 V82" stroke-width="3.2"/><rect x="42" y="6" width="30" height="6.5" stroke="none" fill="#ecebe2"/><rect x="42" y="103" width="30" height="9" stroke="none" fill="#ecebe2"/><path d="M102 6 H110 V112 H102 Z" stroke-width="2.6"/><rect x="102" y="106" width="8" height="6" stroke="none" fill="#ecebe2"/><path d="M40.2 126.6 C53 125.6 74 125.9 88.4 127 L88.8 141.4 C83.6 141.1 76.6 140.9 70.8 141.6 L71.2 182.8 C66.6 183 61.6 183.2 58 183 L57.4 142 C50.6 141.6 44.6 141.8 40.8 140.8 Z" stroke-width="2.6" fill="none"/></g><g class="lg-ghost" stroke="#b5bba8" fill="none" opacity=".42"><path d="M34.5 10 H37.5 V107 H34.5 Z" stroke-width="1.4" fill="none"/><path d="M77 10 H97 V106 H77 Z" stroke-width="2.6" fill="none"/><rect x="77" y="96" width="20" height="10" stroke="none" fill="#b5bba8"/></g></svg>
-            <div class="boot-wordmark">CHAOS<span>.EXE</span></div>
-            <div class="boot-sub">a new dimension, every reload</div>
-            <div class="boot-lcd">
-                <div class="boot-row"><span class="lcd-lbl">BOOT SEQUENCE</span><span class="seg" id="boot-pct">000%</span></div>
-                <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
-                <div class="boot-row"><span class="seg boot-status" id="boot-status">INITIALIZING</span><span class="lcd-lbl" id="boot-step">01/05</span></div>
-            </div>
-            <div class="boot-foot">TETSTACK · chaos.tetstack.dev</div>
+        <div class="po-top po-ink">
+            <div class="po-brand"><svg class="logo" viewBox="0 0 120 192" fill="none" stroke-linecap="square" aria-hidden="true"><g class="lg-shadow" stroke="#5e625b" fill="none"><path d="M10.5 9 V114.5 H32.5 V9 Z" stroke-width="3" fill="none"/><path d="M44.5 9 V114.5 H74.5 V9 Z" stroke-width="3" fill="none"/><path d="M104.5 9 V114.5 H112.5 V9 Z" stroke-width="2.4" fill="none"/><path d="M42.6 129.2 C55 128.4 76 128.6 90.8 129.6 L91.2 144 C86 143.8 79 143.6 73.2 144.2 L73.6 185.4 C69 185.6 64 185.8 60.4 185.6 L59.8 144.6 C53 144.2 47 144.4 43.2 143.4 Z" stroke-width="3" fill="none"/></g><g class="lg-ink" stroke="#ecebe2" fill="none"><path d="M30 40 V6 H8 V112 H30 V54" stroke-width="3.2"/><rect x="8" y="105" width="22" height="7" stroke="none" fill="#ecebe2"/><rect x="8" y="6" width="22" height="4" stroke="none" fill="#ecebe2"/><path d="M42 70 V6 H72 V112 H42 V82" stroke-width="3.2"/><rect x="42" y="6" width="30" height="6.5" stroke="none" fill="#ecebe2"/><rect x="42" y="103" width="30" height="9" stroke="none" fill="#ecebe2"/><path d="M102 6 H110 V112 H102 Z" stroke-width="2.6"/><rect x="102" y="106" width="8" height="6" stroke="none" fill="#ecebe2"/><path d="M40.2 126.6 C53 125.6 74 125.9 88.4 127 L88.8 141.4 C83.6 141.1 76.6 140.9 70.8 141.6 L71.2 182.8 C66.6 183 61.6 183.2 58 183 L57.4 142 C50.6 141.6 44.6 141.8 40.8 140.8 Z" stroke-width="2.6" fill="none"/></g><g class="lg-ghost" stroke="#b5bba8" fill="none" opacity=".42"><path d="M34.5 10 H37.5 V107 H34.5 Z" stroke-width="1.4" fill="none"/><path d="M77 10 H97 V106 H77 Z" stroke-width="2.6" fill="none"/><rect x="77" y="96" width="20" height="10" stroke="none" fill="#b5bba8"/></g></svg><span>TETSTACK<em>/ CHAOS.EXE</em></span></div>
+            <div class="po-pct"><span id="boot-pct">000</span><small>%</small></div>
         </div>
+        <div class="po-side po-ink" id="boot-seed">SEED  ····</div>
+        <div class="po-main">
+            <div class="po-word po-ink" id="boot-word">BOOTING</div>
+            <div class="po-sub" id="boot-status">a new dimension, every reload</div>
+        </div>
+        <div class="po-log po-ink" id="boot-log" aria-hidden="true"></div>
+        <div class="po-steps po-ink" id="boot-steps" aria-hidden="true"><span>01 SEED</span><span>02 MOOD</span><span>03 PAL</span><span>04 SHAPE</span><span>05 MUT</span><span>06 ORBIT</span><span>07 GPU</span><span>08 FRAME</span></div>
+        <div class="po-bar"><div id="boot-bar-fill"></div></div>
     </div>
 
     <script>
@@ -268,51 +287,142 @@
             const c = document.createElement('canvas');
             c.width = c.height = 200;
             const x = c.getContext('2d'), d = x.createImageData(200, 200), p = d.data;
-            for (let i = 0; i < p.length; i += 4) { const v = Math.random() < 0.5 ? 0 : 255; p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = Math.random() * 80; }
+            for (let i = 0; i < p.length; i += 4) { const v = Math.random() < 0.5 ? 0 : 255; p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = Math.random() * 56; }
             x.putImageData(d, 0, 0);
             g.style.backgroundImage = 'url(' + c.toDataURL('image/png') + ')';
         })();
     </script>
 
     <script>
+        // BOOT POSTER — no fake timer. The module reports its real stages through
+        // window.__BOOT (seed hashed, mood, palette, shape, lineage, satellites, shaders,
+        // first frame); each one lands as a huge word over a two-colour field that
+        // recolours itself to the dimension the moment its palette is known. Stages are
+        // queued so they read at a human pace even though the module builds in one burst.
         (function(){
             const plymouth = document.getElementById('plymouth');
             const bar      = document.getElementById('boot-bar-fill');
+            const wordEl   = document.getElementById('boot-word');
             const status   = document.getElementById('boot-status');
-            if (!plymouth || !bar || !status) return;
+            if (!plymouth || !bar || !wordEl || !status) return;
+            const pctEl  = document.getElementById('boot-pct');
+            const logEl  = document.getElementById('boot-log');
+            const seedEl = document.getElementById('boot-seed');
+            const steps  = Array.from(document.querySelectorAll('#boot-steps span'));
+            const canvas = document.getElementById('ply-canvas');
 
-            const pctEl = document.getElementById('boot-pct');
-            const stepEl = document.getElementById('boot-step');
-            const stages = [
-                { pct: 15,  label: 'seeding rng',          delay: 260 },
-                { pct: 35,  label: 'hashing',              delay: 520 },
-                { pct: 58,  label: 'building geometry',    delay: 780 },
-                { pct: 82,  label: 'compiling shaders',    delay: 1050 },
-                { pct: 100, label: 'ready',                delay: 1320 }
-            ];
-            let shown = 0, target = 0, last = performance.now();
+            const T0 = performance.now(), MIN_SHOW = 2600, GAP = 260;
+            const queue = []; let busy = false, finished = false, failed = false, running = true;
+            let shown = 0, target = 0, step = -1, last = performance.now();
+
             function count(now) {
                 const dt = Math.min(200, now - last); last = now;
-                if (shown < target) { shown = Math.min(target, shown + Math.max(1, Math.round(dt * 0.14))); if (pctEl) pctEl.textContent = String(shown).padStart(3, '0') + '%'; }
-                if (shown < 100) requestAnimationFrame(count);
+                if (shown < target) { shown = Math.min(target, shown + Math.max(1, Math.round(dt * 0.14))); if (pctEl) pctEl.textContent = String(shown).padStart(3, '0'); }
+                if (running) requestAnimationFrame(count);
             }
             requestAnimationFrame(count);
 
-            stages.forEach((s, i) => {
+            let wordNode = wordEl;
+            function setWord(w) {
+                const n = wordNode.cloneNode(false);         // a fresh node restarts the entrance animation
+                n.textContent = w; wordNode.replaceWith(n); wordNode = n;
+            }
+            function addLog(key, val) {
+                if (!logEl) return;
+                const line = document.createElement('div');
+                const k = document.createElement('b'); k.textContent = key;
+                line.appendChild(k); line.appendChild(document.createTextNode(val));
+                logEl.appendChild(line);
+                while (logEl.children.length > 5) logEl.removeChild(logEl.firstChild);
+            }
+            function markStep(i) {
+                steps.forEach((s, j) => { s.classList.toggle('done', j < i); s.classList.toggle('now', j === i); });
+            }
+            function apply(s) {
+                if (s.done) { finish(); return; }
+                target = s.pct; bar.style.width = s.pct + '%';
+                setWord(s.word);
+                status.textContent = s.detail || '';
+                step = Math.min(steps.length - 1, step + 1); markStep(step);
+                if (s.key) addLog(s.key, s.detail);
+                if (s.key === 'SEED' && seedEl) seedEl.textContent = 'SEED  ' + s.detail;
+            }
+            function flush() {
+                if (busy || failed || !queue.length) return;
+                busy = true; apply(queue.shift());
+                setTimeout(() => { busy = false; flush(); }, GAP);
+            }
+            function finish() {
+                if (finished || failed) return; finished = true;
+                const wait = Math.max(0, MIN_SHOW - (performance.now() - T0));
                 setTimeout(() => {
-                    bar.style.width = s.pct + '%';
-                    target = s.pct;
-                    status.textContent = s.label.toUpperCase();
-                    if (stepEl) stepEl.textContent = String(i + 1).padStart(2, '0') + '/' + String(stages.length).padStart(2, '0');
-                    if (s.pct === 100){
-                        setTimeout(() => {
-                            shown = 100; if (pctEl) pctEl.textContent = '100%';
-                            plymouth.classList.add('hide');
-                            setTimeout(() => { plymouth.style.display = 'none'; }, 1100);
-                        }, 420);
+                    target = 100; shown = 100; bar.style.width = '100%';
+                    if (pctEl) pctEl.textContent = '100';
+                    setWord('READY'); status.textContent = 'a new dimension, every reload';
+                    steps.forEach(s => { s.classList.add('done'); s.classList.remove('now'); });
+                    setTimeout(() => {
+                        plymouth.classList.add('hide');
+                        setTimeout(() => { plymouth.style.display = 'none'; running = false; }, 1100);
+                    }, 520);
+                }, wait);
+            }
+            function fail(msg) {
+                if (finished) return; failed = true;
+                setWord('COLLAPSED'); status.textContent = String(msg || 'unknown error').slice(0, 120);
+                plymouth.style.pointerEvents = 'auto';
+            }
+
+            // ---- the field: a tiny domain-warped pattern painted through the same 4-stop
+            // two-colour ramp the real duotone pass uses, upscaled with hard pixels ----
+            const W = 160, H = 100;
+            let ctx = null, img = null, px = null;
+            if (canvas) { canvas.width = W; canvas.height = H; ctx = canvas.getContext('2d'); img = ctx.createImageData(W, H); px = img.data; }
+            const colA = [43, 45, 42], colB = [236, 235, 226], tgtA = colA.slice(), tgtB = colB.slice();
+            const rot = Math.random() * 6.28, dens = 1.2 + Math.random() * 1.4;
+            function hex(h) { const n = parseInt(h.replace('#', ''), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+            function setPalette(a, b) {
+                const A = hex(a), B = hex(b);
+                for (let i = 0; i < 3; i++) { tgtA[i] = A[i]; tgtB[i] = B[i]; }
+                plymouth.style.setProperty('--ba', a); plymouth.style.setProperty('--bb', b);
+            }
+            function paint(now) {
+                if (!running) return;
+                requestAnimationFrame(paint);
+                if (!ctx) return;
+                const t = now * 0.001;
+                for (let i = 0; i < 3; i++) { colA[i] += (tgtA[i] - colA[i]) * 0.05; colB[i] += (tgtB[i] - colB[i]) * 0.05; }
+                const k0 = colA.map(c => c * 0.05), k3 = colB.map(c => c + (255 - c) * 0.35);
+                const cr = Math.cos(rot), sr = Math.sin(rot);
+                let o = 0;
+                for (let y = 0; y < H; y++) {
+                    for (let x = 0; x < W; x++) {
+                        let u = (x / W - 0.5) * 3.2 * dens, v = (y / H - 0.5) * 2.0 * dens;
+                        const ru = u * cr - v * sr, rv = u * sr + v * cr; u = ru; v = rv;
+                        const a = Math.sin(u * 2.0 + t * 0.6 + Math.sin(v * 2.4 - t * 0.5) * 1.3);
+                        const b = Math.cos(v * 2.2 - t * 0.45 + Math.sin(u * 1.7 + t * 0.35) * 1.4);
+                        let l = 0.5 + 0.5 * Math.sin(a * 2.4 + b * 2.4 + t * 0.4);
+                        l = Math.pow(l, 1.3) * (0.55 + 0.45 * (0.5 + 0.5 * Math.cos(u * 3.0 + b * 2.0 - t * 0.3)));
+                        let r, g, bl;
+                        if (l < 0.35) { const f = l / 0.35; r = k0[0] + (colA[0] - k0[0]) * f; g = k0[1] + (colA[1] - k0[1]) * f; bl = k0[2] + (colA[2] - k0[2]) * f; }
+                        else if (l < 0.78) { const f = (l - 0.35) / 0.43; r = colA[0] + (colB[0] - colA[0]) * f; g = colA[1] + (colB[1] - colA[1]) * f; bl = colA[2] + (colB[2] - colA[2]) * f; }
+                        else { const f = (l - 0.78) / 0.22; r = colB[0] + (k3[0] - colB[0]) * f; g = colB[1] + (k3[1] - colB[1]) * f; bl = colB[2] + (k3[2] - colB[2]) * f; }
+                        px[o++] = r; px[o++] = g; px[o++] = bl; px[o++] = 255;
                     }
-                }, s.delay);
-            });
+                }
+                ctx.putImageData(img, 0, 0);
+            }
+            requestAnimationFrame(paint);
+
+            window.__BOOT = {
+                stage(pct, word, key, detail) { queue.push({ pct, word, key, detail }); flush(); },
+                palette: setPalette,
+                done() { queue.push({ done: true }); flush(); },
+                fail,
+            };
+            window.addEventListener('error', e => fail(e.message));
+            window.addEventListener('unhandledrejection', e => fail(e.reason && e.reason.message || e.reason));
+            // if the module never reports in (blocked CDN, old browser), don't leave the poster up forever
+            setTimeout(() => { if (!finished && !failed) { addLog('WARN', 'no report from the module'); finish(); } }, 15000);
         })();
     </script>
 
@@ -329,11 +439,12 @@
         import * as THREE from "three";
         import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
         import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+        import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
         import { AfterimagePass } from "three/addons/postprocessing/AfterimagePass.js";
         import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
         import { FilmPass } from "three/addons/postprocessing/FilmPass.js";
         import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-        import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+        import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
         import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 
         let visitorCount = parseInt(localStorage.getItem('chaos_visitors') || '0');
@@ -354,22 +465,78 @@
             };
         }
 
+        // Fold EVERY character of the seed into the 64-bit state. The old version
+        // shifted 8 bits per char under a 64-bit mask, so each half only remembered
+        // its last 8 chars and the two halves were XORed with a 32-bit offset —
+        // which left exactly visitorCount % 10000 distinct dimensions and ignored
+        // the daily seed entirely. This is FNV-1a (64-bit) over the whole string,
+        // then one SplitMix64 finaliser so neighbouring counts land far apart.
         function seedTo64(s) {
-            let h1 = 0n, h2 = 0n;
+            const M = 0xffffffffffffffffn;
             const str = String(s);
+            let h = 0xcbf29ce484222325n;                       // FNV offset basis
             for (let i = 0; i < str.length; i++) {
-                const c = BigInt(str.charCodeAt(i));
-                if (i < str.length / 2) {
-                    h1 = ((h1 << 8n) + c) & 0xffffffffffffffffn;
-                } else {
-                    h2 = ((h2 << 8n) + c) & 0xffffffffffffffffn;
-                }
+                h ^= BigInt(str.charCodeAt(i));
+                h = (h * 0x100000001b3n) & M;                  // FNV prime
             }
-            return (h1 ^ (h2 << 32n)) & 0xffffffffffffffffn;
+            // finaliser: full 64-bit avalanche so every input bit touches every output bit
+            h = (h ^ (h >> 30n)) * 0xbf58476d1ce4e5b9n & M;
+            h = (h ^ (h >> 27n)) * 0x94d049bb133111ebn & M;
+            return h ^ (h >> 31n);
         }
 
         const seed64 = seedTo64(SEED_RAW);
+        const BOOT = window.__BOOT || { stage() {}, palette() {}, done() {} };
+        BOOT.stage(10, 'SEEDED', 'SEED', '0x' + seed64.toString(16).padStart(16, '0') + '  ·  visitor ' + visitorCount);
         const rng = splitmix64(seed64);
+        // A second, independent stream for things that happen *while* the scene runs
+        // (palette jumps), so runtime randomness never disturbs construction order.
+        const runtimeRng = splitmix64((seed64 ^ 0x5eed0fbead5eed5n) & 0xffffffffffffffffn);
+
+        // =====================================================================
+        //  MOOD ENGINE — one seeded scalar, 0 (calm) → 1 (wild), that every
+        //  eye-strain effect reads from: film grain, duotone dither, how often
+        //  the palette jumps, how often a jump is a hard cut, the flash and the
+        //  flinch that land with it, afterimage trail length and bloom.
+        //  Third independent stream so it never disturbs construction or the
+        //  palette schedule. Most seeds land calm/soft; a few go wild.
+        //  Overrides: ?calm=1, ?mood=0..1. Cycle live with the M key / MOOD button.
+        // =====================================================================
+        const moodRng = splitmix64((seed64 ^ 0x4d00d4d00d4d00dn) & 0xffffffffffffffffn);
+        const MOOD_NAMES = ['CALM', 'SOFT', 'LIVELY', 'WILD'];
+        const MOOD_STOPS = [0.05, 0.35, 0.65, 0.95];
+        const mood = { v: Math.pow(moodRng(), 1.6), target: 0, locked: false };
+        {
+            const qp = new URLSearchParams(location.search);
+            if (qp.has('calm')) { mood.v = 0.05; mood.locked = true; }
+            if (qp.has('mood')) {
+                const m = parseFloat(qp.get('mood'));
+                if (Number.isFinite(m)) { mood.v = Math.min(1, Math.max(0, m)); mood.locked = true; }
+            }
+            mood.target = mood.v;
+        }
+        function moodIndex(v) { return Math.min(MOOD_NAMES.length - 1, Math.floor(v * MOOD_NAMES.length)); }
+        function moodName(v) { return MOOD_NAMES[moodIndex(v)]; }
+        // every effect asks for its calm value and its wild value; the mood picks the point between
+        function ml(calm, wild) { return calm + (wild - calm) * mood.v; }
+        function cycleMood() {
+            mood.target = MOOD_STOPS[(moodIndex(mood.target) + 1) % MOOD_STOPS.length];
+            updateMoodLabel();
+        }
+        function updateMoodLabel() {
+            const el = document.getElementById('mood-txt');
+            if (el) el.textContent = moodName(mood.target);
+        }
+        function updateMood(dt) {
+            // ease toward the target so a key press is a slow exhale, not a cut
+            mood.v += (mood.target - mood.v) * Math.min(1, dt * 1.5);
+        }
+        updateMoodLabel();
+        BOOT.stage(20, moodName(mood.v), 'MOOD', 'mood ' + mood.v.toFixed(2) + (mood.locked ? '  ·  pinned by url' : '  ·  seeded'));
+        document.getElementById('mood-key')?.addEventListener('click', cycleMood);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'm' || e.key === 'M') { if (!e.metaKey && !e.ctrlKey && !e.altKey) cycleMood(); }
+        });
 
         const seedDisplay = document.getElementById('seed-display');
         const seedVal = document.getElementById('seed-val');
@@ -387,10 +554,7 @@
         seedDisplay.addEventListener('click', () => {
             navigator.clipboard.writeText(SEED_RAW).then(() => {
                 seedVal.textContent = 'COPIED TO CLIPBOARD';
-
-                setTimeout(() => {
-                    updateSeedDisplay();
-                }, 2000);
+                setTimeout(() => { updateSeedDisplay(); }, 2000);
             }).catch(err => {
                 console.error('Failed to copy seed: ', err);
                 alert('Could not copy seed automatically.');
@@ -400,6 +564,7 @@
         function rand() { return rng(); }
         function randRange(min, max) { return min + (max - min) * rand(); }
         function randInt(min, max) { return Math.floor(randRange(min, max + 1)); }
+        function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
 
         function seededColor() {
             const hue = rand();
@@ -408,30 +573,98 @@
             return new THREE.Color().setHSL(hue, sat, light);
         }
 
-        function getBgColors() {
-            const h1 = rand();
-            const h2 = (h1 + 0.4 + 0.4 * rand()) % 1.0;
-            const s1 = 0.7 + 0.3 * rand();
-            const s2 = 0.7 + 0.3 * rand();
-            const l1 = 0.02 + 0.06 * rand();
-            const l2 = 0.02 + 0.06 * rand();
-            return {
-                top: new THREE.Color().setHSL(h1, s1, l1),
-                bottom: new THREE.Color().setHSL(h2, s2, l2),
-            };
+        // =====================================================================
+        //  PALETTE ENGINE — the whole dimension is exactly two colours.
+        //  A (deep) and B (bright). They jump to a new random pair on a seeded
+        //  schedule and every material in the scene reads the same uniforms, so
+        //  the change lands everywhere in the same frame.
+        // =====================================================================
+        const HUE_GAPS = [0.5, 0.5, 0.33, 0.42, 0.08, 0.12, 0.62, 0.25];
+        function makePair(r) {
+            const h1 = r();
+            const gap = HUE_GAPS[Math.floor(r() * HUE_GAPS.length)];
+            const h2 = (h1 + gap + (r() - 0.5) * 0.06 + 1) % 1;
+            const mode = r();
+            let a, b;
+            if (mode < 0.25) {
+                // ink + neon
+                a = new THREE.Color().setHSL(h1, 0.55 + 0.45 * r(), 0.08 + 0.12 * r());
+                b = new THREE.Color().setHSL(h2, 0.85 + 0.15 * r(), 0.55 + 0.25 * r());
+            } else if (mode < 0.5) {
+                // dusk pair
+                a = new THREE.Color().setHSL(h1, 0.6 + 0.3 * r(), 0.18 + 0.17 * r());
+                b = new THREE.Color().setHSL(h2, 0.5 + 0.4 * r(), 0.62 + 0.25 * r());
+            } else if (mode < 0.7) {
+                // near-monochrome: same hue, two values
+                a = new THREE.Color().setHSL(h1, 0.5 + 0.5 * r(), 0.12 + 0.15 * r());
+                b = new THREE.Color().setHSL((h1 + (r() - 0.5) * 0.05 + 1) % 1, 0.4 + 0.5 * r(), 0.7 + 0.22 * r());
+            } else if (mode < 0.85) {
+                // bleached / paper
+                a = new THREE.Color().setHSL(h1, 0.7 + 0.3 * r(), 0.22 + 0.2 * r());
+                b = new THREE.Color().setHSL(h2, 0.15 + 0.3 * r(), 0.85 + 0.12 * r());
+            } else {
+                // acid
+                a = new THREE.Color().setHSL(h1, 0.95, 0.3 + 0.2 * r());
+                b = new THREE.Color().setHSL(h2, 0.95, 0.5 + 0.2 * r());
+            }
+            return { a, b };
         }
 
+        const first = makePair(rand);
+        const palette = {
+            a: first.a.clone(), b: first.b.clone(),          // live, what shaders read
+            fromA: first.a.clone(), fromB: first.b.clone(),
+            toA: first.a.clone(), toB: first.b.clone(),
+            t0: 0, dur: 1, next: 2.5 + 6 * rand(),
+            kick: 0,                                         // 1 right after a jump, decays
+            hard: false,
+            jumps: 0,
+        };
+        const paletteTempo = randRange(0.6, 1.6);            // how restless this seed is
+        BOOT.palette('#' + palette.a.getHexString(), '#' + palette.b.getHexString());
+        BOOT.stage(32, 'DUOTONE', 'PAL', '#' + palette.a.getHexString() + '  /  #' + palette.b.getHexString() + '  ·  tempo ' + paletteTempo.toFixed(2));
+
+        function schedulePaletteJump(now) {
+            const pair = makePair(runtimeRng);
+            palette.fromA.copy(palette.a);
+            palette.fromB.copy(palette.b);
+            palette.toA.copy(pair.a);
+            palette.toB.copy(pair.b);
+            palette.t0 = now;
+            const roll = runtimeRng();
+            palette.hard = roll < ml(0.0, 0.3);                           // calm never hard-cuts, wild does 30% of the time
+            palette.dur = palette.hard ? 0.0001 : (ml(1.6, 0.4) + 3.2 * runtimeRng());
+            palette.next = now + (2.5 + 11 * runtimeRng()) * ml(2.0, 1.0) / paletteTempo;   // calm jumps half as often
+            palette.kick = 1;
+            palette.jumps++;
+            if (typeof mutation !== 'undefined') mutation.v = Math.min(mutation.max, mutation.v + 0.03);   // each jump mutates it a step further
+        }
+
+        function updatePalette(now) {
+            if (now >= palette.next) schedulePaletteJump(now);
+            let k = Math.min(1, (now - palette.t0) / palette.dur);
+            k = k * k * (3 - 2 * k);
+            palette.a.copy(palette.fromA).lerp(palette.toA, k);
+            palette.b.copy(palette.fromB).lerp(palette.toB, k);
+            palette.kick = Math.max(0, 1 - (now - palette.t0) / 0.6);     // a 0.6 s flinch, clock-based
+        }
+
+        const SHAPE_COUNT = 41;                         // 0..39 generators, 40 = compound of the others
+        const SHAPE_NAMES = ['torus knot', 'supershape', 'wobble torus', 'icosahedron', 'octahedron', 'dodecahedron', 'box', 'sphere', 'cylinder', 'cone',
+            'ring', 'plane', 'lathe', 'spiral shell', 'saddle sheet', 'corkscrew', 'fluted torus', 'ribbed cylinder', 'rippled sphere', 'sinc ripple',
+            'torus arc', 'spline tube', 'lathe pod', 'lissajous knot', 'harmonic blob', 'klein bottle', 'möbius band', 'berry cluster', 'fractal flake', 'gyroid sheet',
+            'conch', 'superellipsoid', 'braid', 'enneper', 'dini', 'roman surface', 'voxel colony', 'clelia spiral', 'urchin', 'rose lathe', 'compound'];
         function getGeoParams() {
-            const type = randInt(0, 12);
-            const radius = randRange(0.8, 3.2);
-            const tube = randRange(0.15, 0.9);
+            const type = randInt(0, SHAPE_COUNT - 1);
+            const radius = randRange(1.4, 5.2);
+            const tube = randRange(0.2, 1.3);
             const radialSeg = randInt(8, 64);
             const tubularSeg = randInt(8, 64);
             const p = randInt(1, 15);
             const q = randInt(1, 15);
-            const width = randRange(1.2, 4.0);
-            const height = randRange(1.2, 4.0);
-            const depth = randRange(1.2, 4.0);
+            const width = randRange(2.0, 6.5);
+            const height = randRange(2.0, 6.5);
+            const depth = randRange(2.0, 6.5);
             const detail = randInt(1, 8);
             return { type, radius, tube, radialSeg, tubularSeg, p, q, width, height, depth, detail };
         }
@@ -447,7 +680,7 @@
                 waveSpeed: randRange(0.1, 2.0),
                 waveAmp: randRange(0.05, 1.0),
                 particleSpeed: randRange(0.05, 1.5),
-                particleSpread: randRange(1.5, 10),
+                particleSpread: randRange(2.5, 14),
                 pulseSpeed: randRange(0.2, 2.5),
                 pulseAmp: randRange(0.02, 0.6),
                 chaosFactor: randRange(0.1, 3.0),
@@ -462,10 +695,10 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x111211);
-        scene.fog = new THREE.Fog(0x111211, 50, 200);
+        scene.fog = new THREE.Fog(0x111211, 60, 240);
 
-        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 200);
-        camera.position.set(0, 1.2, 7);
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 400);
+        camera.position.set(0, 1.8, 11.5);
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({
@@ -476,7 +709,7 @@
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.5;
+        renderer.toneMappingExposure = 0.6;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
@@ -493,39 +726,93 @@
         controls.minDistance = 1;
         controls.maxDistance = 200;
 
+        // ---------------------------------------------------------------------
+        //  Post: render -> bloom -> DUOTONE (two colours, nothing else) -> film -> afterimage
+        // ---------------------------------------------------------------------
         const composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
-        composer.addPass(renderPass);
+        composer.addPass(new RenderPass(scene, camera));
 
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.15, 0.3, 0.1);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.15, 0.35, 0.65);
         composer.addPass(bloomPass);
 
-        const filmPass = new FilmPass(0.35, 0.025, 648, false);
-        composer.addPass(filmPass);
+        const duotoneShader = {
+            uniforms: {
+                tDiffuse: { value: null },
+                uColA: { value: palette.a },
+                uColB: { value: palette.b },
+                uExposure: { value: randRange(0.45, 0.85) },
+                uContrast: { value: randRange(1.0, 1.5) },
+                uSplit: { value: randRange(0.4, 0.6) },     // where A hands over to B
+                uGrainT: { value: 0 },
+                uGrain: { value: 0.006 },                 // dither amplitude, mood-driven
+                uKick: { value: 0 },
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+            `,
+            fragmentShader: `
+                uniform sampler2D tDiffuse;
+                uniform vec3 uColA, uColB;
+                uniform float uExposure, uContrast, uSplit, uGrainT, uGrain, uKick;
+                varying vec2 vUv;
+                float hash12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+                void main() {
+                    vec3 src = texture2D(tDiffuse, vUv).rgb * uExposure;     // linear HDR straight from the composer
+                    src = (src * (2.51 * src + 0.03)) / (src * (2.43 * src + 0.59) + 0.14);   // ACES fit
+                    float lum = dot(clamp(src, 0.0, 1.0), vec3(0.2126, 0.7152, 0.0722));
+                    lum = pow(lum, 1.0 / 1.8);                               // to display gamma before the ramp
+                    lum = clamp((lum - 0.5) * uContrast + 0.5, 0.0, 1.0);
+                    lum += (hash12(vUv * 1731.0 + uGrainT) - 0.5) * uGrain; // just enough dither that the ramp never bands
+                    lum = clamp(lum, 0.0, 1.0);
+                    // four stops built from ONLY the two colours: A sunk to near-black, A, B, B lifted
+                    vec3 k0 = uColA * 0.05;
+                    vec3 k1 = uColA;
+                    vec3 k2 = uColB;
+                    vec3 k3 = mix(uColB, vec3(1.0), 0.35);
+                    float s = uSplit;
+                    vec3 col;
+                    if (lum < s * 0.75) col = mix(k0, k1, smoothstep(0.0, s * 0.75, lum));
+                    else if (lum < s + (1.0 - s) * 0.55) col = mix(k1, k2, smoothstep(s * 0.75, s + (1.0 - s) * 0.55, lum));
+                    else col = mix(k2, k3, smoothstep(s + (1.0 - s) * 0.55, 1.0, lum));
+                    // the instant a palette lands, a whole-frame flash of B
+                    col = mix(col, uColB, uKick * uKick * 0.25);
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `,
+        };
+        const duotonePass = new ShaderPass(duotoneShader);
+        composer.addPass(duotonePass);
 
-        const afterimagePass = new AfterimagePass(0.96);
+        const filmPass = new FilmPass(0.06, false);            // intensity is re-set every frame from the mood
+        composer.addPass(filmPass);
+        const filmNoise = filmPass.uniforms.nIntensity || filmPass.uniforms.intensity;   // r157 / r163+ names
+
+        const afterimagePass = new AfterimagePass(0.86);       // damp is re-set every frame from the mood
         afterimagePass.renderToScreen = true;
         composer.addPass(afterimagePass);
 
-        const ambientLight = new THREE.AmbientLight(0x0a0414, 0.25);
+        // ---------------------------------------------------------------------
+        //  Lights (hue no longer matters after the duotone — only where light lands)
+        // ---------------------------------------------------------------------
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
         scene.add(ambientLight);
 
         const lightColor = seededColor();
         const lightPos = new THREE.Vector3(
-            Math.sin(randRange(0, Math.PI * 2)) * randRange(5, 9),
-            randRange(7, 14),
-            Math.cos(randRange(0, Math.PI * 2)) * randRange(5, 9)
+            Math.sin(randRange(0, Math.PI * 2)) * randRange(7, 13),
+            randRange(8, 16),
+            Math.cos(randRange(0, Math.PI * 2)) * randRange(7, 13)
         );
 
-        const keyLight = new THREE.DirectionalLight(lightColor, randRange(0.9, 1.5));
+        const keyLight = new THREE.DirectionalLight(0xffffff, randRange(0.9, 1.5));
         keyLight.position.copy(lightPos);
         keyLight.castShadow = true;
         keyLight.shadow.mapSize.width = 2048;
         keyLight.shadow.mapSize.height = 2048;
         keyLight.shadow.camera.near = 0.8;
-        keyLight.shadow.camera.far = 40.0;
-
-        const shadowExtent = randRange(8, 14);
+        keyLight.shadow.camera.far = 60.0;
+        const shadowExtent = randRange(10, 18);
         keyLight.shadow.camera.left = -shadowExtent;
         keyLight.shadow.camera.right = shadowExtent;
         keyLight.shadow.camera.top = shadowExtent;
@@ -536,32 +823,29 @@
         scene.add(keyLight);
 
         const lightColor2 = seededColor();
-        const fillLight = new THREE.DirectionalLight(lightColor2, randRange(0.2, 0.45));
-        fillLight.position.set(
-            -lightPos.x * randRange(0.7, 1.3),
-            randRange(-3, 5),
-            -lightPos.z * randRange(0.7, 1.3)
-        );
+        const fillLight = new THREE.DirectionalLight(0xffffff, randRange(0.2, 0.45));
+        fillLight.position.set(-lightPos.x * randRange(0.7, 1.3), randRange(-3, 5), -lightPos.z * randRange(0.7, 1.3));
         scene.add(fillLight);
 
         const lightColor3 = seededColor();
-        const rimLight = new THREE.DirectionalLight(lightColor3, randRange(0.4, 0.8));
-        rimLight.position.set(
-            randRange(-4, 4),
-            randRange(2, 6),
-            -randRange(8, 14)
-        );
+        const rimLight = new THREE.DirectionalLight(0xffffff, randRange(0.4, 0.8));
+        rimLight.position.set(randRange(-4, 4), randRange(2, 6), -randRange(8, 14));
         scene.add(rimLight);
 
-        const bgColors = getBgColors();
-        const bgGeo = new THREE.SphereGeometry(80, 64, 64);
+        const keyI = keyLight.intensity, fillI = fillLight.intensity, rimI = rimLight.intensity;
+
+        // ---------------------------------------------------------------------
+        //  Background: the hyperspace shader, now painting in A and B only
+        // ---------------------------------------------------------------------
+        const bgGeo = new THREE.SphereGeometry(90, 64, 64);
         const bgMat = new THREE.ShaderMaterial({
             side: THREE.BackSide,
             uniforms: {
                 uTime: { value: 0 },
                 uSeed: { value: Number(seed64 & 0xffffff2n) },
-                uColorA: { value: bgColors.top },
-                uColorB: { value: bgColors.bottom },
+                uColorA: { value: palette.a },
+                uColorB: { value: palette.b },
+                uDensity: { value: randRange(1.5, 4.0) },
             },
             vertexShader: `
             varying vec3 vPos;
@@ -575,13 +859,11 @@
             uniform vec3 uColorB;
             uniform float uTime;
             uniform float uSeed;
+            uniform float uDensity;
             varying vec3 vPos;
-        
-            mat2 rot(float a) {
-              float c = cos(a), s = sin(a);
-              return mat2(c, -s, s, c);
-            }
-        
+
+            mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+
             float hyperspace(vec2 p, float t) {
               float accum = 0.0;
               float amp = 0.5;
@@ -594,58 +876,36 @@
               }
               return accum;
             }
-        
-            vec3 hsv2rgb(vec3 c) {
-              vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
-              vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-              return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-            }
-        
+
             void main() {
               vec3 dir = normalize(vPos);
               vec2 uv = dir.xy / (1.0 + abs(dir.z));
-              uv *= 2.5;
-        
+              uv *= uDensity;
               float t = uTime * 0.15;
-        
               vec2 p = uv + vec2(sin(t * 0.2), cos(t * 0.3)) * 0.5;
               float warp1 = hyperspace(p, t);
               float warp2 = hyperspace(p * 1.5 - warp1, -t * 0.8);
-        
               float pattern = sin(warp1 * 4.0 + warp2 * 3.0 + t) * 0.5 + 0.5;
               float structure = cos(warp2 * 6.0 - warp1 * 2.0 - t * 0.5) * 0.5 + 0.5;
-        
-              float hue = fract(pattern * 0.3 + structure * 0.2 + t * 0.05 + uSeed * 0.00001);
-              float sat = 0.85 + 0.15 * sin(warp1 * 5.0);
-              float light = 0.12 + 0.18 * structure;
-        
-              vec3 psychedelic = hsv2rgb(vec3(hue, sat, light));
-        
-              float mixFactor = smoothstep(0.1, 0.9, pattern);
-              vec3 baseCol = mix(uColorA, uColorB, mixFactor);
-        
-              vec3 finalCol = mix(baseCol, psychedelic, 0.55 + 0.25 * cos(t * 0.4));
-        
+              float v = smoothstep(0.1, 0.9, pattern) * 0.65 + structure * 0.35;
               float grid = abs(sin(uv.x * 10.0 + warp1 * 3.0) * cos(uv.y * 20.0 + warp2 * 3.0));
-              grid = pow(grid, 4.0) * 0.2;
-              finalCol += vec3(0.6, 0.9, 1.0) * grid * (0.5 + 0.5 * sin(t));
-        
+              grid = pow(grid, 4.0) * 0.25 * (0.5 + 0.5 * sin(t));
               float vignette = 1.0 - 0.4 * length(dir.xy);
-              finalCol *= vignette;
-        
-              gl_FragColor = vec4(finalCol, 1.0);
+              // mostly deep A, with B only where the pattern peaks (kept dim so the subject stays the brightest thing)
+              vec3 col = mix(uColorA * 0.12, uColorA * 0.5, v);
+              col = mix(col, uColorB * 0.55, smoothstep(0.75, 1.0, v) * 0.6 + grid);
+              gl_FragColor = vec4(col * vignette, 1.0);
             }
           `,
         });
-        const bgMesh = new THREE.Mesh(bgGeo, bgMat);
-        bgMesh.receiveShadow = false;
-        scene.add(bgMesh);
+        scene.add(new THREE.Mesh(bgGeo, bgMat));
 
+        // =====================================================================
+        //  GEOMETRY — bigger, deeper, compound, clustered, fractal
+        // =====================================================================
         const geoParams = getGeoParams();
-        let mainGeo;
-        const subSeg = Math.floor(randRange(24, 96));
-        const subSeg2 = Math.floor(randRange(12, 48));
-        const shapeType = Math.abs(Math.floor(geoParams.type)) % 24;
+        const subSeg = Math.floor(randRange(32, 110));
+        const subSeg2 = Math.floor(randRange(16, 56));
 
         const superformula = (phi, a, b, m, n1, n2, n3) => {
             let t1 = Math.abs(Math.cos(m * phi / 4) / a);
@@ -657,428 +917,836 @@
             return Math.pow(t3, -1 / n1);
         };
 
-        switch (shapeType) {
-            case 0:
-                mainGeo = new THREE.TorusKnotGeometry(geoParams.radius, geoParams.tube, subSeg * 2, subSeg2, Math.floor(randRange(1, 8)), Math.floor(randRange(2, 11)));
-                break;
-            case 1:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const theta = u * Math.PI * 2;
-                    const phi = (v - 0.5) * Math.PI;
-                    const r1 = superformula(theta, randRange(0.5, 1.5), randRange(0.5, 1.5), randRange(2, 9), randRange(0.5, 2.0), randRange(0.5, 2.0), randRange(0.5, 2.0));
-                    const r2 = superformula(phi, randRange(0.5, 1.5), randRange(0.5, 1.5), randRange(1, 7), randRange(0.5, 2.0), randRange(0.5, 2.0), randRange(0.5, 2.0));
-                    const x = geoParams.radius * r1 * Math.cos(theta) * r2 * Math.cos(phi);
-                    const y = geoParams.radius * r1 * Math.sin(theta) * r2 * Math.cos(phi);
-                    const z = geoParams.radius * r2 * Math.sin(phi);
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 2:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u1 = u * Math.PI * 2;
-                    const v1 = v * Math.PI * 2;
-                    const a = geoParams.radius;
-                    const n = randRange(1.0, 5.0);
-                    const x = a * Math.cos(u1) * (1 + Math.cos(v1) / n);
-                    const y = a * Math.sin(u1) * (1 + Math.cos(v1) / n);
-                    const z = a * Math.sin(v1) / n + Math.sin(u1 * 3.0) * randRange(0.1, 0.5);
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 3:
-                mainGeo = new THREE.IcosahedronGeometry(geoParams.radius, Math.floor(randRange(0, 4)));
-                break;
-            case 4:
-                mainGeo = new THREE.OctahedronGeometry(geoParams.radius, Math.floor(randRange(0, 4)));
-                break;
-            case 5:
-                mainGeo = new THREE.DodecahedronGeometry(geoParams.radius, Math.floor(randRange(0, 3)));
-                break;
-            case 6:
-                mainGeo = new THREE.BoxGeometry(geoParams.width, geoParams.height, geoParams.depth, subSeg2, subSeg2, subSeg2);
-                break;
-            case 7:
-                mainGeo = new THREE.SphereGeometry(geoParams.radius, subSeg, subSeg2);
-                break;
-            case 8:
-                mainGeo = new THREE.CylinderGeometry(geoParams.radius * randRange(0.1, 1.5), geoParams.radius * randRange(0.1, 1.5), geoParams.height, subSeg, subSeg2);
-                break;
-            case 9:
-                mainGeo = new THREE.ConeGeometry(geoParams.radius, geoParams.height, subSeg, subSeg2);
-                break;
-            case 10:
-                mainGeo = new THREE.RingGeometry(geoParams.radius * randRange(0.05, 0.5), geoParams.radius * randRange(1.0, 2.0), subSeg);
-                break;
-            case 11:
-                mainGeo = new THREE.PlaneGeometry(geoParams.width, geoParams.height, subSeg, subSeg);
-                break;
-            case 12:
-                mainGeo = new THREE.LatheGeometry(
-                    Array.from({ length: 24 }, (_, i) => {
+        function nonIndexed(g) { return g.index ? g.toNonIndexed() : g; }
+
+        function buildShape(shapeType, depth) {
+            depth = depth || 0;
+            const R = geoParams.radius;
+            let g;
+            switch (shapeType) {
+                case 0:
+                    g = new THREE.TorusKnotGeometry(R, geoParams.tube, subSeg * 2, subSeg2, Math.floor(randRange(1, 8)), Math.floor(randRange(2, 11)));
+                    break;
+                case 1: {
+                    const sa = randRange(0.5, 1.5), sb = randRange(0.5, 1.5), sm = randRange(2, 12), sn1 = randRange(0.3, 2.0), sn2 = randRange(0.3, 2.0), sn3 = randRange(0.3, 2.0);
+                    const ta = randRange(0.5, 1.5), tb = randRange(0.5, 1.5), tm = randRange(1, 9), tn1 = randRange(0.3, 2.0), tn2 = randRange(0.3, 2.0), tn3 = randRange(0.3, 2.0);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const theta = u * Math.PI * 2;
+                        const phi = (v - 0.5) * Math.PI;
+                        const r1 = superformula(theta, sa, sb, sm, sn1, sn2, sn3);
+                        const r2 = superformula(phi, ta, tb, tm, tn1, tn2, tn3);
+                        target.set(R * r1 * Math.cos(theta) * r2 * Math.cos(phi), R * r1 * Math.sin(theta) * r2 * Math.cos(phi), R * r2 * Math.sin(phi));
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 2: {
+                    const n = randRange(1.0, 5.0), k = randRange(0.1, 0.6);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u1 = u * Math.PI * 2, v1 = v * Math.PI * 2;
+                        target.set(R * Math.cos(u1) * (1 + Math.cos(v1) / n), R * Math.sin(u1) * (1 + Math.cos(v1) / n), R * Math.sin(v1) / n + Math.sin(u1 * 3.0) * k);
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 3: g = new THREE.IcosahedronGeometry(R, Math.floor(randRange(1, 5))); break;
+                case 4: g = new THREE.OctahedronGeometry(R, Math.floor(randRange(1, 5))); break;
+                case 5: g = new THREE.DodecahedronGeometry(R, Math.floor(randRange(1, 4))); break;
+                case 6: g = new THREE.BoxGeometry(geoParams.width, geoParams.height, geoParams.depth, subSeg2, subSeg2, subSeg2); break;
+                case 7: g = new THREE.SphereGeometry(R, subSeg, subSeg2); break;
+                case 8: g = new THREE.CylinderGeometry(R * randRange(0.1, 1.5), R * randRange(0.1, 1.5), geoParams.height, subSeg, subSeg2); break;
+                case 9: g = new THREE.ConeGeometry(R, geoParams.height, subSeg, subSeg2); break;
+                case 10: g = new THREE.RingGeometry(R * randRange(0.05, 0.5), R * randRange(1.0, 2.0), subSeg, 6); break;
+                case 11: g = new THREE.PlaneGeometry(geoParams.width, geoParams.height, subSeg, subSeg); break;
+                case 12:
+                    g = new THREE.LatheGeometry(Array.from({ length: 24 }, (_, i) => {
                         const t = i / 23;
-                        return new THREE.Vector2(
-                            Math.sin(t * Math.PI * randRange(1, 6)) * randRange(0.2, 1.2) + randRange(0.1, 0.5),
-                            (t - 0.5) * geoParams.height * randRange(0.8, 1.5)
-                        );
-                    }),
-                    subSeg
-                );
-                break;
-            case 13:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * Math.PI * randRange(1.0, 4.0);
-                    const v_ = (v - 0.5) * Math.PI * 2.0;
-                    const r = geoParams.radius * (1.0 + 0.3 * Math.sin(u_ * 3.0 + v_ * 2.0));
-                    const x = r * Math.cos(u_) * Math.cos(v_);
-                    const y = r * Math.sin(u_) * Math.cos(v_);
-                    const z = r * Math.sin(v_) + Math.cos(u_ * v_) * 0.5;
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 14:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * 4.0 - 2.0;
-                    const v_ = v * 4.0 - 2.0;
-                    const x = u_;
-                    const y = v_;
-                    const z = Math.sin(u_ * u_ - v_ * v_) * 0.8 * randRange(0.5, 2.0);
-                    target.set(x, y, z);
-                }, subSeg, subSeg);
-                break;
-            case 15:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const phi = u * Math.PI * 2.0;
-                    const theta = v * Math.PI;
-                    const c = randRange(0.5, 2.0);
-                    const x = c * (1.0 - phi / (2.0 * Math.PI)) * Math.cos(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.cos(phi);
-                    const y = c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.sin(phi);
-                    const z = c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(theta);
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 16:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * Math.PI * 2.0;
-                    const v_ = v * Math.PI;
-                    const r = geoParams.radius;
-                    const x = r * (2.0 + Math.cos(v_)) * Math.cos(u_);
-                    const y = r * (2.0 + Math.cos(v_)) * Math.sin(u_);
-                    const z = r * (Math.sin(v_) + Math.cos(v_ * 4.0));
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 17:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * Math.PI * 2.0;
-                    const v_ = v * 2.0 - 1.0;
-                    const r = geoParams.radius;
-                    const x = r * Math.sqrt(1.0 - v_ * v_) * Math.cos(u_);
-                    const y = r * Math.sqrt(1.0 - v_ * v_) * Math.sin(u_);
-                    const z = r * v_ + Math.sin(u_ * 6.0) * 0.2;
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 18:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * Math.PI * 2.0;
-                    const v_ = v * Math.PI * 2.0;
-                    const x = Math.sin(u_) * Math.cos(v_) * geoParams.radius;
-                    const y = Math.sin(u_) * Math.sin(v_) * geoParams.radius;
-                    const z = Math.cos(u_) * geoParams.radius + Math.sin(u_ * 3.0 + v_ * 3.0) * 0.4;
-                    target.set(x, y, z);
-                }, subSeg, subSeg2);
-                break;
-            case 19:
-                mainGeo = new THREE.ParametricGeometry((u, v, target) => {
-                    const u_ = u * 6.0 - 3.0;
-                    const v_ = v * 6.0 - 3.0;
-                    const r = Math.sqrt(u_ * u_ + v_ * v_) + 0.001;
-                    const z = Math.sin(r * randRange(2.0, 8.0)) / r * 0.8;
-                    target.set(u_, z, v_);
-                }, subSeg, subSeg);
-                break;
-            case 20:
-                mainGeo = new THREE.TorusGeometry(geoParams.radius * randRange(0.5, 1.5), geoParams.tube * randRange(0.2, 2.0), subSeg2, subSeg, Math.PI * randRange(0.5, 2.0));
-                break;
-            case 21:
-                mainGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-                    new THREE.Vector3(-randRange(1, 3), randRange(-1, 1), -randRange(1, 3)),
-                    new THREE.Vector3(randRange(-1, 1), randRange(1, 3), randRange(-1, 1)),
-                    new THREE.Vector3(randRange(1, 3), -randRange(-1, 1), randRange(1, 3)),
-                    new THREE.Vector3(-randRange(1, 3), -randRange(1, 3), randRange(-1, 1))
-                ]), subSeg, geoParams.tube * randRange(0.5, 2.0), subSeg2, true);
-                break;
-            case 22:
-                mainGeo = new THREE.LatheGeometry(
-                    Array.from({ length: 30 }, (_, i) => {
+                        return new THREE.Vector2(Math.sin(t * Math.PI * randRange(1, 6)) * randRange(0.2, 1.2) + randRange(0.1, 0.5), (t - 0.5) * geoParams.height * randRange(0.8, 1.5));
+                    }), subSeg);
+                    break;
+                case 13: {
+                    const turns = randRange(1.0, 4.0);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = u * Math.PI * turns, v_ = (v - 0.5) * Math.PI * 2.0;
+                        const r = R * (1.0 + 0.3 * Math.sin(u_ * 3.0 + v_ * 2.0));
+                        target.set(r * Math.cos(u_) * Math.cos(v_), r * Math.sin(u_) * Math.cos(v_), r * Math.sin(v_) + Math.cos(u_ * v_) * 0.5);
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 14: {
+                    const amp = 0.8 * randRange(0.5, 2.0), S = R * 0.9;
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = (u * 4.0 - 2.0) * S * 0.5, v_ = (v * 4.0 - 2.0) * S * 0.5;
+                        target.set(u_, v_, Math.sin(u_ * u_ - v_ * v_) * amp);
+                    }, subSeg, subSeg);
+                    break;
+                }
+                case 15: {
+                    const c = randRange(0.6, 2.4);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const phi = u * Math.PI * 2.0, theta = v * Math.PI;
+                        target.set(
+                            c * (1.0 - phi / (2.0 * Math.PI)) * Math.cos(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.cos(phi),
+                            c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(2.0 * phi) * (1.0 + Math.cos(theta)) + c * Math.sin(phi),
+                            c * (1.0 - phi / (2.0 * Math.PI)) * Math.sin(theta));
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 16:
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = u * Math.PI * 2.0, v_ = v * Math.PI, r = R * 0.5;
+                        target.set(r * (2.0 + Math.cos(v_)) * Math.cos(u_), r * (2.0 + Math.cos(v_)) * Math.sin(u_), r * (Math.sin(v_) + Math.cos(v_ * 4.0)));
+                    }, subSeg, subSeg2);
+                    break;
+                case 17:
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = u * Math.PI * 2.0, v_ = v * 2.0 - 1.0;
+                        target.set(R * Math.sqrt(1.0 - v_ * v_) * Math.cos(u_), R * Math.sqrt(1.0 - v_ * v_) * Math.sin(u_), R * v_ + Math.sin(u_ * 6.0) * 0.2);
+                    }, subSeg, subSeg2);
+                    break;
+                case 18:
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = u * Math.PI * 2.0, v_ = v * Math.PI * 2.0;
+                        target.set(Math.sin(u_) * Math.cos(v_) * R, Math.sin(u_) * Math.sin(v_) * R, Math.cos(u_) * R + Math.sin(u_ * 3.0 + v_ * 3.0) * 0.4);
+                    }, subSeg, subSeg2);
+                    break;
+                case 19: {
+                    const f = randRange(2.0, 8.0), S = R * 1.3;
+                    g = new ParametricGeometry((u, v, target) => {
+                        const u_ = (u * 2 - 1) * S, v_ = (v * 2 - 1) * S;
+                        const r = Math.sqrt(u_ * u_ + v_ * v_) + 0.001;
+                        target.set(u_, Math.sin(r * f) / r * 0.8 * S * 0.5, v_);
+                    }, subSeg, subSeg);
+                    break;
+                }
+                case 20: g = new THREE.TorusGeometry(R * randRange(0.5, 1.5), geoParams.tube * randRange(0.2, 2.0), subSeg2, subSeg, Math.PI * randRange(0.5, 2.0)); break;
+                case 21:
+                    g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+                        new THREE.Vector3(-randRange(1, 4), randRange(-1, 1), -randRange(1, 4)),
+                        new THREE.Vector3(randRange(-1, 1), randRange(1, 4), randRange(-1, 1)),
+                        new THREE.Vector3(randRange(1, 4), -randRange(-1, 1), randRange(1, 4)),
+                        new THREE.Vector3(-randRange(1, 4), -randRange(1, 4), randRange(-1, 1))
+                    ], true), subSeg, geoParams.tube * randRange(0.5, 2.0), subSeg2, true);
+                    break;
+                case 22:
+                    g = new THREE.LatheGeometry(Array.from({ length: 30 }, (_, i) => {
                         const phi = (i / 29) * Math.PI;
-                        return new THREE.Vector2(
-                            Math.sin(phi) * geoParams.radius + Math.cos(phi * 4.0) * 0.15,
-                            Math.cos(phi) * geoParams.height
-                        );
-                    }),
-                    subSeg
-                );
-                break;
-            case 23:
-            default:
-                mainGeo = new THREE.TorusKnotGeometry(1.6, 0.4, 64, 16, Math.floor(randRange(1, 5)), Math.floor(randRange(2, 6)));
-                break;
+                        return new THREE.Vector2(Math.sin(phi) * R + Math.cos(phi * 4.0) * 0.15 + 0.01, Math.cos(phi) * geoParams.height * 0.5);
+                    }), subSeg);
+                    break;
+                case 23: {
+                    // Lissajous knot tube — a 3D curve that never closes on itself the same way twice
+                    const a = randInt(1, 5), b = randInt(2, 7), c = randInt(1, 6), ph = randRange(0, Math.PI), ph2 = randRange(0, Math.PI);
+                    const pts = [];
+                    for (let i = 0; i < 240; i++) {
+                        const t = (i / 240) * Math.PI * 2;
+                        pts.push(new THREE.Vector3(R * Math.sin(a * t + ph), R * Math.sin(b * t), R * Math.sin(c * t + ph2)));
+                    }
+                    g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), Math.max(120, subSeg * 2), geoParams.tube * randRange(0.25, 0.8), subSeg2, true);
+                    break;
+                }
+                case 24: {
+                    // Spherical-harmonic blob  r = sum of powered sin/cos of m·angle
+                    const m = [randInt(0, 7), randInt(0, 7), randInt(0, 7), randInt(0, 7), randInt(0, 7), randInt(0, 7), randInt(0, 7), randInt(0, 7)];
+                    g = new ParametricGeometry((u, v, target) => {
+                        const th = u * Math.PI * 2, ph = v * Math.PI;
+                        let r = Math.pow(Math.abs(Math.sin(m[0] * ph)), m[1]) + Math.pow(Math.abs(Math.cos(m[2] * ph)), m[3])
+                              + Math.pow(Math.abs(Math.sin(m[4] * th)), m[5]) + Math.pow(Math.abs(Math.cos(m[6] * th)), m[7]);
+                        r = R * (0.35 + 0.65 * r / 4);
+                        target.set(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 25: {
+                    // Klein bottle
+                    g = new ParametricGeometry((u, v, target) => {
+                        u *= Math.PI; v *= 2 * Math.PI; u = u * 2;
+                        let x, y, z;
+                        if (u < Math.PI) {
+                            x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(u) * Math.cos(v);
+                            z = -8 * Math.sin(u) - 2 * (1 - Math.cos(u) / 2) * Math.sin(u) * Math.cos(v);
+                        } else {
+                            x = 3 * Math.cos(u) * (1 + Math.sin(u)) + (2 * (1 - Math.cos(u) / 2)) * Math.cos(v + Math.PI);
+                            z = -8 * Math.sin(u);
+                        }
+                        y = -2 * (1 - Math.cos(u) / 2) * Math.sin(v);
+                        target.set(x, y, z).multiplyScalar(R * 0.16);
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 26: {
+                    // Twisted Möbius band with thickness (two offset sheets)
+                    const w = R * randRange(0.25, 0.7), twists = randInt(1, 5);
+                    const sheet = (off) => new ParametricGeometry((u, v, target) => {
+                        const t = u * Math.PI * 2, s = (v - 0.5) * 2 * w;
+                        const a = twists * t / 2;
+                        const r = R + (s + off) * Math.cos(a);
+                        target.set(r * Math.cos(t), (s + off) * Math.sin(a), r * Math.sin(t));
+                    }, subSeg * 2, subSeg2);
+                    g = mergeGeometries([nonIndexed(sheet(0)), nonIndexed(sheet(0.08 * R))]);
+                    break;
+                }
+                case 27: {
+                    // BERRY CLUSTER — a bunch of spheres grown along a spiralling stem
+                    const n = randInt(14, 60), turns = randRange(1.5, 5), rise = R * randRange(0.8, 2.2);
+                    const parts = [];
+                    for (let i = 0; i < n; i++) {
+                        const t = i / n;
+                        const ang = t * Math.PI * 2 * turns + randRange(-0.3, 0.3);
+                        const rad = R * (0.25 + 0.75 * Math.sin(t * Math.PI)) * randRange(0.7, 1.1);
+                        const br = R * randRange(0.16, 0.42);
+                        const s = new THREE.SphereGeometry(br, 22, 16);
+                        s.translate(Math.cos(ang) * rad, (t - 0.5) * rise + randRange(-0.2, 0.2) * R, Math.sin(ang) * rad);
+                        parts.push(nonIndexed(s));
+                    }
+                    g = mergeGeometries(parts);
+                    break;
+                }
+                case 28: {
+                    // Fractal flake: polyhedra spawning smaller polyhedra on their vertices, 3 generations
+                    const base = pick([() => new THREE.OctahedronGeometry(1, 0), () => new THREE.IcosahedronGeometry(1, 0), () => new THREE.TetrahedronGeometry(1, 0), () => new THREE.DodecahedronGeometry(1, 0)]);
+                    const parts = [];
+                    const smoothLevel = randInt(1, 3);
+                    const grow = (center, size, gen) => {
+                        const p = pick([() => new THREE.IcosahedronGeometry(size, smoothLevel), () => new THREE.OctahedronGeometry(size, smoothLevel), () => new THREE.SphereGeometry(size, 18, 12)])();
+                        p.translate(center.x, center.y, center.z);
+                        parts.push(nonIndexed(p));
+                        if (gen === 0 || parts.length > 400) return;
+                        const skel = base();
+                        const pa = skel.attributes.position;
+                        const seen = new Set();
+                        for (let i = 0; i < pa.count; i++) {
+                            const v = new THREE.Vector3().fromBufferAttribute(pa, i);
+                            const key = v.toArray().map(x => x.toFixed(3)).join(',');
+                            if (seen.has(key)) continue;
+                            seen.add(key);
+                            if (rand() < 0.25) continue;
+                            grow(center.clone().add(v.multiplyScalar(size * 1.35)), size * randRange(0.38, 0.55), gen - 1);
+                        }
+                    };
+                    grow(new THREE.Vector3(), R * 0.7, 2);
+                    g = mergeGeometries(parts);
+                    break;
+                }
+                case 29: {
+                    // Gyroid-ish folded sheet: a plane folded through a triply periodic function
+                    const f = randRange(1.2, 3.0), S = R * 1.2;
+                    g = new ParametricGeometry((u, v, target) => {
+                        const x = (u * 2 - 1) * S, z = (v * 2 - 1) * S;
+                        const y = (Math.sin(f * x) * Math.cos(f * z) + Math.sin(f * z) * Math.cos(f * x * 0.5)) * S * 0.35;
+                        target.set(x, y, z + Math.sin(f * y) * 0.3);
+                    }, subSeg, subSeg);
+                    break;
+                }
+                case 30: {
+                    // CONCH — a logarithmic spiral swept with a circle; the mouth widens as it turns
+                    const turns = randRange(2.5, 6), growth = randRange(0.12, 0.3), flare = randRange(0.5, 1.4), pitch = randRange(0.3, 1.2);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const t = u * Math.PI * 2 * turns, s = v * Math.PI * 2;
+                        const e = Math.exp(growth * t / (Math.PI * 2));
+                        const rad = R * 0.24 * e * flare;
+                        const cx = R * 0.36 * e * Math.cos(t), cz = R * 0.36 * e * Math.sin(t), cy = -R * 0.24 * e * pitch;
+                        target.set(cx + rad * Math.cos(s) * Math.cos(t), cy + rad * Math.sin(s), cz + rad * Math.cos(s) * Math.sin(t));
+                    }, subSeg * 2, subSeg2);
+                    break;
+                }
+                case 31: {
+                    // SUPERELLIPSOID — one family that runs from octahedron through sphere to rounded box to star
+                    const e1 = randRange(0.2, 2.5), e2 = randRange(0.2, 2.5), ax = randRange(0.8, 1.8), ay = randRange(0.8, 1.8), az = randRange(0.8, 1.8);
+                    const sp = (w, e) => Math.sign(w) * Math.pow(Math.abs(w), e);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const th = (u - 0.5) * Math.PI, ph = (v - 0.5) * Math.PI * 2;
+                        target.set(R * ax * sp(Math.cos(th), e1) * sp(Math.cos(ph), e2), R * ay * sp(Math.sin(th), e1), R * az * sp(Math.cos(th), e1) * sp(Math.sin(ph), e2));
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 32: {
+                    // BRAID — 2 to 5 tubes plaited around a ring
+                    const strands = randInt(2, 5), twist = randRange(2, 7), tubeR = geoParams.tube * randRange(0.25, 0.6), sep = R * randRange(0.15, 0.35), parts = [];
+                    for (let k = 0; k < strands; k++) {
+                        const pts = [];
+                        for (let i = 0; i < 200; i++) {
+                            const t = i / 200 * Math.PI * 2, a = t * twist + k * Math.PI * 2 / strands;
+                            const rr = R + sep * Math.cos(a);
+                            pts.push(new THREE.Vector3(rr * Math.cos(t), sep * Math.sin(a), rr * Math.sin(t)));
+                        }
+                        parts.push(nonIndexed(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 200, tubeR, Math.max(6, Math.floor(subSeg2 / 2)), true)));
+                    }
+                    g = mergeGeometries(parts);
+                    break;
+                }
+                case 33: {
+                    // ENNEPER — a minimal surface of order k, the soap-film that folds through itself
+                    const k = randInt(2, 5), S = R * 0.55, rMax = k >= 4 ? 1.15 : 1.5;
+                    g = new ParametricGeometry((u, v, target) => {
+                        const r = u * rMax, ph = v * Math.PI * 2, m = 2 * k - 1;
+                        const x = r * Math.cos(ph) - Math.pow(r, m) * Math.cos(m * ph) / m;
+                        const y = r * Math.sin(ph) + Math.pow(r, m) * Math.sin(m * ph) / m;
+                        const z = 2 * Math.pow(r, k) * Math.cos(k * ph) / k;
+                        target.set(x * S, z * S, y * S);
+                    }, subSeg2, subSeg);
+                    break;
+                }
+                case 34: {
+                    // DINI — a pseudosphere twisted into a helix
+                    const a = R * 0.5, b = randRange(0.08, 0.25), turns = randRange(2, 5);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const uu = u * Math.PI * 2 * turns, vv = 0.08 + v * (Math.PI - 0.16) * 0.6;
+                        target.set(a * Math.cos(uu) * Math.sin(vv), a * (Math.cos(vv) + Math.log(Math.tan(vv / 2))) + b * uu * a * 0.5, a * Math.sin(uu) * Math.sin(vv));
+                    }, subSeg * 2, subSeg2);
+                    break;
+                }
+                case 35: {
+                    // ROMAN SURFACE — the sphere pushed through (x,y,z) → (yz, xz, xy): a self-intersecting tri-lobe
+                    const S = R * 1.8, lx = randRange(0.7, 1.4), ly = randRange(0.7, 1.4), lz = randRange(0.7, 1.4);
+                    g = new ParametricGeometry((u, v, target) => {
+                        const th = u * Math.PI * 2, ph = (v - 0.5) * Math.PI;
+                        const a = Math.cos(th) * Math.cos(ph), b = Math.sin(th) * Math.cos(ph), c = Math.sin(ph);
+                        target.set(S * b * c * lx, S * a * c * ly, S * a * b * lz);
+                    }, subSeg, subSeg2);
+                    break;
+                }
+                case 36: {
+                    // VOXEL COLONY — a seeded cube grid run through one generation of a 3-D cellular rule
+                    const N = randInt(4, 8), cell = (R * 1.6) / N, thresh = randRange(0.35, 0.6);
+                    const live = new Uint8Array(N * N * N), next = new Uint8Array(N * N * N);
+                    for (let i = 0; i < live.length; i++) live[i] = rand() < thresh ? 1 : 0;
+                    const at = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= N || y >= N || z >= N) ? 0 : live[x + N * (y + N * z)];
+                    for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+                        const nb = at(x-1,y,z) + at(x+1,y,z) + at(x,y-1,z) + at(x,y+1,z) + at(x,y,z-1) + at(x,y,z+1);
+                        next[x + N * (y + N * z)] = at(x, y, z) ? (nb >= 1 ? 1 : 0) : (nb >= 3 ? 1 : 0);
+                    }
+                    const parts = [];
+                    for (let z = 0; z < N && parts.length < 320; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+                        if (!next[x + N * (y + N * z)]) continue;
+                        const s = cell * randRange(0.75, 1.0);
+                        const box = new THREE.BoxGeometry(s, s, s, 2, 2, 2);
+                        box.translate((x - (N - 1) / 2) * cell, (y - (N - 1) / 2) * cell, (z - (N - 1) / 2) * cell);
+                        parts.push(nonIndexed(box));
+                    }
+                    if (!parts.length) parts.push(nonIndexed(new THREE.BoxGeometry(R, R, R, 4, 4, 4)));
+                    g = mergeGeometries(parts);
+                    break;
+                }
+                case 37: {
+                    // CLELIA — a spiral wound over a sphere from pole to pole, as a tube
+                    const c = randRange(2, 9), tubeR = geoParams.tube * randRange(0.2, 0.5), pts = [];
+                    for (let i = 0; i <= 400; i++) {
+                        const th = (i / 400) * Math.PI;
+                        pts.push(new THREE.Vector3(R * Math.sin(th) * Math.cos(c * th), R * Math.cos(th), R * Math.sin(th) * Math.sin(c * th)));
+                    }
+                    g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false), 400, tubeR, Math.max(6, Math.floor(subSeg2 / 2)), false);
+                    break;
+                }
+                case 38: {
+                    // URCHIN — a core with spines placed by the golden angle, so they never line up
+                    const spikes = randInt(30, 140), len = R * randRange(0.6, 1.6), base = R * randRange(0.04, 0.12), core = R * randRange(0.35, 0.7);
+                    const parts = [nonIndexed(new THREE.SphereGeometry(core, 32, 24))];
+                    const ga = Math.PI * (3 - Math.sqrt(5)), up = new THREE.Vector3(0, 1, 0), dir = new THREE.Vector3(), q = new THREE.Quaternion();
+                    for (let i = 0; i < spikes; i++) {
+                        const y = 1 - (i / (spikes - 1)) * 2, rr = Math.sqrt(1 - y * y), th = ga * i;
+                        dir.set(Math.cos(th) * rr, y, Math.sin(th) * rr);
+                        const h = len * randRange(0.5, 1.3);
+                        const cone = new THREE.ConeGeometry(base * randRange(0.6, 1.4), h, 10, 1);
+                        cone.translate(0, h * 0.5 + core * 0.8, 0);
+                        cone.applyQuaternion(q.setFromUnitVectors(up, dir));
+                        parts.push(nonIndexed(cone));
+                    }
+                    g = mergeGeometries(parts);
+                    break;
+                }
+                case 39: {
+                    // ROSE LATHE — a rhodonea profile r = cos(kθ) spun, with a sine ruffle on the rim
+                    const k = randInt(2, 7), ruffle = randRange(0, 0.25), H = geoParams.height;
+                    g = new THREE.LatheGeometry(Array.from({ length: 48 }, (_, i) => {
+                        const t = i / 47, th = t * Math.PI;
+                        const r = Math.abs(Math.cos(k * th)) * R * (0.6 + 0.4 * Math.sin(t * Math.PI)) + 0.05 * R + Math.sin(t * Math.PI * 9) * ruffle * R;
+                        return new THREE.Vector2(r, (t - 0.5) * H);
+                    }), subSeg);
+                    break;
+                }
+                case 40:
+                default: {
+                    // COMPOUND — 2 to 4 other shapes, each thrown into its own orientation and fused
+                    if (depth > 0) { g = new THREE.TorusKnotGeometry(R * 0.6, geoParams.tube * 0.6, 96, 20, randInt(1, 5), randInt(2, 6)); break; }
+                    const n = randInt(2, 4), parts = [];
+                    for (let i = 0; i < n; i++) {
+                        let t = randInt(0, SHAPE_COUNT - 2);
+                        if (t === 27 || t === 28 || t === 36 || t === 38) t = randInt(0, 26);   // keep the vertex budget sane
+                        const sub = nonIndexed(buildShape(t, depth + 1));
+                        const m = new THREE.Matrix4().compose(
+                            new THREE.Vector3(randRange(-1, 1), randRange(-1, 1), randRange(-1, 1)).multiplyScalar(R * 0.35),
+                            new THREE.Quaternion().setFromEuler(new THREE.Euler(randRange(0, 6.28), randRange(0, 6.28), randRange(0, 6.28))),
+                            new THREE.Vector3().setScalar(randRange(0.45, 0.95)));
+                        sub.applyMatrix4(m);
+                        parts.push(sub);
+                    }
+                    g = mergeGeometries(parts);
+                    break;
+                }
+            }
+            return g;
         }
 
+        const urlParams = new URLSearchParams(location.search);
+        const forcedShape = parseInt(urlParams.get('shape'), 10);
+        const shapeType = Number.isFinite(forcedShape) ? Math.abs(forcedShape) % SHAPE_COUNT : Math.abs(Math.floor(geoParams.type)) % SHAPE_COUNT;
+        let mainGeo = buildShape(shapeType, 0);
+        // weld: compound/merged shapes come back unindexed with flat normals, and a vertex
+        // shader that pushes along the normal would tear every face apart at the seams
+        mainGeo.deleteAttribute('uv');
+        mainGeo = mergeVertices(mainGeo, 1e-4);
+
+        // ---- CPU pass: a LINEAGE of mutations, each generation working on the last ----
         const posAttr = mainGeo.attributes.position;
         const vertCount = posAttr.count;
-        const origPos = posAttr.array.slice();
+        const P = posAttr.array;
+        const geoRadius = () => { let m = 0; for (let i = 0; i < P.length; i += 3) m = Math.max(m, P[i] * P[i] + P[i + 1] * P[i + 1] + P[i + 2] * P[i + 2]); return Math.sqrt(m) || 1; };
+        // smooth 3-D value noise for the 'noise' mutator; the hash offset is seeded so it belongs to the dimension
+        const nSeed = randRange(1, 1000);
+        const hash3 = (x, y, z) => { const s = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + nSeed) * 43758.5453; return s - Math.floor(s); };
+        const vnoise = (x, y, z) => {
+            const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+            let fx = x - ix, fy = y - iy, fz = z - iz;
+            fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy); fz = fz * fz * (3 - 2 * fz);
+            const l = (p, q, t) => p + (q - p) * t;
+            return l(l(l(hash3(ix, iy, iz), hash3(ix + 1, iy, iz), fx), l(hash3(ix, iy + 1, iz), hash3(ix + 1, iy + 1, iz), fx), fy),
+                     l(l(hash3(ix, iy, iz + 1), hash3(ix + 1, iy, iz + 1), fx), l(hash3(ix, iy + 1, iz + 1), hash3(ix + 1, iy + 1, iz + 1), fx), fy), fz);
+        };
+        const randAxis = () => new THREE.Vector3(randRange(-1, 1), randRange(-1, 1), randRange(-1, 1)).normalize();
+        const _p = new THREE.Vector3(), _ax = new THREE.Vector3();
 
-        const tX = randRange(-2.5, 2.5);
-        const tY = randRange(-2.5, 2.5);
-        const tZ = randRange(-2.5, 2.5);
-        const pX = randRange(0.5, 4.5);
-        const pY = randRange(0.5, 4.5);
-        const pZ = randRange(0.5, 4.5);
-        const fA = randRange(1.0, 8.0);
-        const fB = randRange(1.0, 8.0);
-        const dAmp = randRange(0.05, 0.5);
-        const harmonicOrder = Math.floor(randRange(1, 6));
+        // Every mutator works in place on the vertex array; Rr is the current radius, k the strength (≈0.6–1.5)
+        const MUTATORS = {
+            twist(Rr, k) {
+                const tK = 2.5 / Math.max(1.5, Rr) * k, tX = randRange(-tK, tK), tY = randRange(-tK, tK);
+                for (let i = 0; i < P.length; i += 3) {
+                    let x = P[i], y = P[i + 1], z = P[i + 2];
+                    const aY = z * tY * 0.2, aX = y * tX * 0.2;
+                    const nx = x * Math.cos(aY) - z * Math.sin(aY); let nz = x * Math.sin(aY) + z * Math.cos(aY); x = nx; z = nz;
+                    const ny = y * Math.cos(aX) - z * Math.sin(aX); nz = y * Math.sin(aX) + z * Math.cos(aX); y = ny; z = nz;
+                    P[i] = x; P[i + 1] = y; P[i + 2] = z;
+                }
+                return 'twist';
+            },
+            warp(Rr, k) {            // domain warp: the shape folds through itself
+                const amp = randRange(0.1, 0.9) * k * Math.max(1, Rr * 0.3), f = randRange(0.4, 1.6) / Math.max(1, Rr * 0.3);
+                for (let i = 0; i < P.length; i += 3) {
+                    const x = P[i], y = P[i + 1], z = P[i + 2];
+                    P[i] += Math.sin(y * f + z * 0.7) * amp; P[i + 1] += Math.sin(z * f + x * 0.7) * amp; P[i + 2] += Math.sin(x * f + y * 0.7) * amp;
+                }
+                return 'warp';
+            },
+            ripple(Rr, k) {          // spherical-harmonic ripple pushed along the radial direction
+                const pX = randRange(0.5, 4.5), pY = randRange(0.5, 4.5), pZ = randRange(0.5, 4.5), fA = randRange(1, 8), fB = randRange(1, 8);
+                const dAmp = randRange(0.02, 0.14) * Rr * k, order = randInt(1, 6);
+                for (let i = 0; i < P.length; i += 3) {
+                    const x = P[i], y = P[i + 1], z = P[i + 2];
+                    const dist = Math.sqrt(x * x + y * y + z * z) || 1;
+                    const sh = Math.sin(order * Math.atan2(y, x)) * Math.cos(order * Math.acos(Math.max(-1, Math.min(1, z / dist))));
+                    const disp = ((Math.sin(x * pX) * Math.cos(y * pY) * Math.sin(z * pZ) + sh * 0.4) * fA * 0.25 + Math.cos(dist * fB) * 0.5) * dAmp;
+                    P[i] += x / dist * disp; P[i + 1] += y / dist * disp; P[i + 2] += z / dist * disp;
+                }
+                return 'ripple';
+            },
+            noise(Rr, k) {           // smooth value-noise lumps, the tumorous kind of growth
+                const f = randRange(0.6, 2.2) / Math.max(1, Rr * 0.5), amp = randRange(0.08, 0.3) * Rr * k, off = randRange(0, 50);
+                for (let i = 0; i < P.length; i += 3) {
+                    const x = P[i], y = P[i + 1], z = P[i + 2], dist = Math.sqrt(x * x + y * y + z * z) || 1;
+                    const n = (vnoise(x * f + off, y * f, z * f) - 0.5) * 2 * amp;
+                    P[i] += x / dist * n; P[i + 1] += y / dist * n; P[i + 2] += z / dist * n;
+                }
+                return 'noise';
+            },
+            swirl(Rr, k) {           // rotation about a random axis that grows with distance from it
+                const ax = randAxis(), turns = randRange(-1.2, 1.2) * k;
+                for (let i = 0; i < P.length; i += 3) {
+                    _p.set(P[i], P[i + 1], P[i + 2]);
+                    _ax.copy(ax).multiplyScalar(_p.dot(ax));
+                    const radial = _p.distanceTo(_ax) / Rr;
+                    _p.applyAxisAngle(ax, radial * turns * Math.PI);
+                    P[i] = _p.x; P[i + 1] = _p.y; P[i + 2] = _p.z;
+                }
+                return 'swirl';
+            },
+            bulge(Rr, k) {           // swell or pinch the waist along a random axis
+                const ax = randAxis(), amt = (rand() < 0.5 ? 1 : -1) * randRange(0.2, 0.6) * k, phase = randRange(0, Math.PI);
+                for (let i = 0; i < P.length; i += 3) {
+                    _p.set(P[i], P[i + 1], P[i + 2]);
+                    const along = _p.dot(ax), s = 1 + amt * Math.sin(along / Rr * Math.PI + phase);
+                    _ax.copy(ax).multiplyScalar(along);
+                    _p.sub(_ax).multiplyScalar(s).add(_ax);
+                    P[i] = _p.x; P[i + 1] = _p.y; P[i + 2] = _p.z;
+                }
+                return amt > 0 ? 'bulge' : 'pinch';
+            },
+            shear(Rr, k) {
+                const sa = randRange(-0.5, 0.5) * k, sb = randRange(-0.5, 0.5) * k;
+                for (let i = 0; i < P.length; i += 3) { P[i] += P[i + 1] * sa; P[i + 2] += P[i + 1] * sb; }
+                return 'shear';
+            },
+            fold(Rr, k) {            // mirror everything on one side of a random plane: a crease of forced symmetry
+                const nrm = randAxis(), d = randRange(-0.4, 0.4) * Rr * k;
+                for (let i = 0; i < P.length; i += 3) {
+                    _p.set(P[i], P[i + 1], P[i + 2]);
+                    const s = _p.dot(nrm) + d;
+                    if (s < 0) { _p.addScaledVector(nrm, -2 * s); P[i] = _p.x; P[i + 1] = _p.y; P[i + 2] = _p.z; }
+                }
+                return 'fold';
+            },
+        };
+        const MUT_KEYS = Object.keys(MUTATORS);
 
-        for (let i = 0; i < vertCount; i++) {
-            const i3 = i * 3;
-            let x = origPos[i3];
-            let y = origPos[i3 + 1];
-            let z = origPos[i3 + 2];
-        
-            const angleX = y * tX * 0.2;
-            const angleY = z * tY * 0.2;
-            const angleZ = x * tZ * 0.2;
-        
-            let nx = x * Math.cos(angleY) - z * Math.sin(angleY);
-            let nz = x * Math.sin(angleY) + z * Math.cos(angleY);
-            x = nx;
-            z = nz;
-        
-            let ny = y * Math.cos(angleX) - z * Math.sin(angleX);
-            nz = y * Math.sin(angleX) + z * Math.cos(angleX);
-            y = ny;
-            z = nz;
-        
-            const dist = Math.sqrt(x * x + y * y + z * z) || 1;
-            const sphericalHarmonic = Math.sin(harmonicOrder * Math.atan2(y, x)) * Math.cos(harmonicOrder * Math.acos(z / dist));
-            const complexMod = Math.sin(x * pX) * Math.cos(y * pY) * Math.sin(z * pZ) + (sphericalHarmonic * 0.4);
-            const disp = (complexMod * fA + Math.cos(dist * fB) * 0.5) * dAmp;
-        
-            posAttr.array[i3] = x + (x / dist) * disp * randRange(0.8, 1.2);
-            posAttr.array[i3 + 1] = y + (y / dist) * disp * randRange(0.8, 1.2);
-            posAttr.array[i3 + 2] = z + (z / dist) * disp * randRange(0.8, 1.2);
+        // Generation 0 is the classic triple (twist, maybe warp, ripple). Then 1–4 more
+        // generations, each picked at random and each a little stronger than the last,
+        // so the shape drifts further from its family the deeper the lineage goes.
+        const lineage = [];
+        lineage.push(MUTATORS.twist(geoRadius(), 1));
+        if (rand() < 0.6) lineage.push(MUTATORS.warp(geoRadius(), 1));
+        lineage.push(MUTATORS.ripple(geoRadius(), 1));
+        const extraGens = randInt(1, 4);
+        for (let gen = 0; gen < extraGens; gen++) {
+            lineage.push(MUTATORS[pick(MUT_KEYS)](geoRadius(), 0.6 + 0.3 * gen));
         }
-
+        BOOT.stage(55, SHAPE_NAMES[shapeType], 'SHAPE', String(shapeType).padStart(2, '0') + '/' + (SHAPE_COUNT - 1) + '  ·  ' + vertCount.toLocaleString() + ' verts  ·  r ' + geoParams.radius.toFixed(1));
+        BOOT.stage(66, 'MUTATING', 'MUT', lineage.join(' → '));
         mainGeo.computeVertexNormals();
         mainGeo.center();
+        mainGeo.computeBoundingSphere();
+        const mainRadius = mainGeo.boundingSphere.radius;
+        // step back so a big shape is a shape, not a wall
+        camera.position.set(0, mainRadius * 0.3, Math.max(11.5, mainRadius * 2.3));
+        camera.lookAt(0, 0, 0);
 
-        const h1 = rand();
-        const h2 = (h1 + randRange(0.25, 0.75)) % 1.0;
-        const h3 = (h2 + randRange(0.25, 0.75)) % 1.0;
+        // =====================================================================
+        //  BERRY MATERIAL — the raspberry/blueberry skin optics, made procedural.
+        //  Every surface is tiled with 3D Voronoi "drupelets": each cell is a sac
+        //  of juice with its own centre, so the fragment shader can do what the
+        //  original does with mesh data — Beer-Lambert absorption through the
+        //  bead, light wrapping out past the terminator, seeing through a sac to
+        //  what's behind, a pale seed blur, GGX specular with Karis' env BRDF,
+        //  velvet sheen from hairs too fine to draw, and a dusty wax bloom.
+        // =====================================================================
+        const BERRY_GLSL_COMMON = `
+            float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+            vec3 hash3(vec3 p) {
+              p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
+              return fract(sin(p) * 43758.5453123);
+            }
+            float noise(vec3 p) {
+              vec3 i = floor(p); vec3 f = fract(p);
+              f = f * f * (3.0 - 2.0 * f);
+              return mix(
+                mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+            }
+            float fbm(vec3 p) {
+              float f = 0.0, amp = 0.5;
+              for (int i = 0; i < 3; i++) { f += amp * noise(p); p *= 2.03; amp *= 0.5; }
+              return f;
+            }
+            // nearest two drupelet centres around p (cell units)
+            void voronoi(vec3 p, out float d1, out float d2, out vec3 c1) {
+              vec3 i = floor(p); vec3 f = fract(p);
+              d1 = 8.0; d2 = 8.0; c1 = vec3(0.0);
+              for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+                vec3 g = vec3(float(x), float(y), float(z));
+                vec3 o = 0.15 + 0.7 * hash3(i + g);
+                vec3 r = g + o - f;
+                float d = dot(r, r);
+                if (d < d1) { d2 = d1; d1 = d; c1 = i + g + o; } else if (d < d2) { d2 = d; }
+              }
+              d1 = sqrt(d1); d2 = sqrt(d2);
+            }
+        `;
 
-        const s1 = randRange(0.65, 1.0),
-            s2 = randRange(0.65, 1.0),
-            s3 = randRange(0.65, 1.0);
+        const BERRY_VERT = `
+            uniform float uTime, uChaos, uNoiseScale, uDispStrength, uMutate;
+            uniform float uCellScale, uDomeR, uDomeAmp;
+            uniform vec3 uSeedOff;
+            varying vec3 vModelPos, vNormalModel, vCenter;
+            varying vec4 vMask;      // x dome height, y crease openness, z per-sac random, w d1
+            varying float vDisplacement;
+            ${BERRY_GLSL_COMMON}
+            void main() {
+              vec3 pos = position;
+              float n = fbm(pos * uNoiseScale + uTime * 0.15);
+              float wave = sin(pos.x * 2.5 + uTime * 0.4) * 0.12 + cos(pos.y * 2.5 + uTime * 0.3) * 0.12;
+              float chaosWave = sin(pos.x * uChaos + uTime * 0.4) * 0.15 + cos(pos.z * uChaos + uTime * 0.3) * 0.15;
+              // the longer the dimension runs, the more uMutate grows: the base displacement
+              // deepens and a finer second layer of growth surfaces that wasn't there at the start
+              float n2 = fbm(pos * (uNoiseScale * 2.6 + uMutate * 1.5) - uTime * 0.07 + 19.0);
+              float d = (n * 1.2 + wave + chaosWave) * uDispStrength * (1.0 + uMutate * 1.2) + (n2 - 0.45) * uMutate * uDispStrength * 2.5;
 
-        const l1 = randRange(0.25, 0.65),
-            l2 = randRange(0.25, 0.65),
-            l3 = randRange(0.25, 0.65);
+              vec3 q = pos * uCellScale * (1.0 + uMutate * 0.4) + uSeedOff;     // drupelets divide finer as it mutates
+              float d1, d2; vec3 c;
+              voronoi(q, d1, d2, c);
+              float h = sqrt(max(uDomeR * uDomeR - d1 * d1, 0.0)) / uDomeR;     // spherical cap profile
+              float crease = smoothstep(0.0, 0.35, d2 - d1);
+              float dome = h * (0.35 + 0.65 * crease);
+              vec3 rnd = hash3(c);
+              float sacSize = 0.75 + 0.5 * rnd.x;                                  // no two sacs the same size
 
-        const colorA = new THREE.Color().setHSL(h1, s1, l1);
-        const colorB = new THREE.Color().setHSL(h2, s2, l2);
-        const colorC = new THREE.Color().setHSL(h3, s3, l3);
+              pos += normal * (d + dome * uDomeAmp * sacSize);
+              vDisplacement = d;
+              vMask = vec4(h, crease, rnd.x, d1);
+              vModelPos = pos;
+              vNormalModel = normal;
+              // the sac's centre, sunk a little below the skin so the bead normal rolls over at the crease
+              vCenter = (c - uSeedOff) / uCellScale - normal * (uDomeR / uCellScale) * 0.35;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+            }
+        `;
 
-        const specHue = (h1 + randRange(0.05, 0.3)) % 1.0;
-        const specCol = new THREE.Color().setHSL(specHue, 0.9, 0.6);
+        const BERRY_FRAG = `
+            uniform float uTime;
+            uniform vec3 uAlbedo, uAlbedo2;        // skin colour at the two ends of the chaos displacement
+            uniform vec3 uTransColor;              // colour of light after uTransDepth units of flesh
+            uniform float uTransDepth;
+            uniform vec3 uBackdrop;                // what you see through a sac
+            uniform vec3 uCamM;                    // camera, model space
+            uniform vec3 uLightDir[3];             // towards the light, model space
+            uniform vec3 uLightCol[3];
+            uniform vec3 uAmbient;
+            uniform float uBead, uSeeThrough, uSeedAmt, uSSS;
+            uniform float uRoughness, uF0, uSpecular;
+            uniform float uSheen; uniform vec3 uSheenColor;
+            uniform float uPoreScale, uPoreStrength;
+            uniform float uBloom, uBloomScale;     // waxy blueberry bloom
+            uniform float uCellScale, uDomeR;
+            uniform float uPulse;
+            varying vec3 vModelPos, vNormalModel, vCenter;
+            varying vec4 vMask;
+            varying float vDisplacement;
+            ${BERRY_GLSL_COMMON}
+            #ifndef saturate
+            #define saturate( a ) clamp( a, 0.0, 1.0 )
+            #endif
+            const float PI = 3.141593;
+
+            // Karis' analytic fit of the split-sum environment BRDF
+            vec2 envBRDF(float roughness, float NoV) {
+              const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+              const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+              vec4 r = roughness * c0 + c1;
+              float a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+              return vec2(-1.04, 1.04) * a004 + r.zw;
+            }
+            float D_GGX(float NoH, float a) { float a2 = a * a; float d = NoH * NoH * (a2 - 1.0) + 1.0; return a2 / (PI * d * d); }
+            float V_Smith(float NoV, float NoL, float a) { float a2 = a * a; float gv = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2); float gl = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2); return 0.5 / max(gv + gl, 1e-4); }
+            // a synthetic studio: a broad soft top light plus the key, blurred by roughness
+            vec3 studioEnv(vec3 R, float rough) {
+              vec3 e = uAmbient * (0.55 + 0.45 * R.y);
+              for (int i = 0; i < 3; i++) {
+                float c = saturate(dot(R, uLightDir[i]));
+                e += uLightCol[i] * pow(c, mix(48.0, 2.0, rough)) * mix(0.9, 0.25, rough);
+              }
+              return e;
+            }
+
+            void main() {
+              if (!gl_FrontFacing) {
+                // looking into a crease you end up behind another sac's shell: deep in the fruit, dark
+                gl_FragColor = vec4(uTransColor * uAmbient * 0.08, 1.0);
+                return;
+              }
+              // ---- normals ----------------------------------------------------
+              vec3 toC = vModelPos - vCenter;
+              float beadR = max(length(toC), 1e-3);
+              vec3 nBead = toC / beadR;
+              float domeW = smoothstep(0.05, 0.6, vMask.x) * (0.5 + 0.5 * vMask.y);
+              vec3 nBase = normalize(mix(normalize(vNormalModel), nBead, domeW));
+              // pores / epidermal cells: gradient of a fine 3D noise
+              vec3 pp = vModelPos * uPoreScale;
+              float e = 0.35;
+              vec3 g = vec3(noise(pp + vec3(e, 0, 0)) - noise(pp - vec3(e, 0, 0)),
+                            noise(pp + vec3(0, e, 0)) - noise(pp - vec3(0, e, 0)),
+                            noise(pp + vec3(0, 0, e)) - noise(pp - vec3(0, 0, e)));
+              float dh = noise(pp);
+              vec3 N = normalize(nBase + g * uPoreStrength);
+              vec3 V = normalize(uCamM - vModelPos);
+              float NoV = saturate(dot(N, V));
+
+              float ao = mix(0.28, 1.0, vMask.y) * mix(0.75, 1.0, vMask.x);
+              float roughness = clamp(uRoughness + (1.0 - vMask.y) * 0.25 + (dh - 0.5) * 0.12, 0.045, 1.0);
+
+              // ---- diffuse + subsurface (analytic stand-in for the baked transfer) ----
+              float t = clamp(vDisplacement * 3.0 + 0.5, 0.0, 1.0);
+              vec3 albedo = mix(uAlbedo, uAlbedo2, t);
+              vec3 irr = uAmbient * (0.6 + 0.4 * nBase.y) * PI;
+              for (int i = 0; i < 3; i++) {
+                float nl = dot(nBase, uLightDir[i]);
+                float wrap = saturate((nl + 0.45) / 1.45);          // flesh scatters light round the terminator
+                irr += uLightCol[i] * wrap * wrap * PI;
+              }
+              vec3 aoC = pow(vec3(ao), vec3(1.0) - 0.75 * albedo / max(max(albedo.r, max(albedo.g, albedo.b)), 1e-3));
+              vec3 sss = pow(albedo, vec3(0.85, 1.25, 1.25)) * irr * (0.75 / PI) * aoC;
+
+              // ---- translucency: each sac as a turbid bead ----------------------
+              vec3 sigma = -log(clamp(uTransColor, vec3(0.002), vec3(0.999))) / uTransDepth;
+              float open = 0.3 + 0.7 * ao;
+              vec3 nS = nBead;                                        // bead normal (pos - centre), as in the original
+              vec3 outward = normalize(vNormalModel);
+              // (a) light entering the lit side of the sac, glowing out past the terminator
+              vec3 bead = vec3(0.0);
+              for (int i = 0; i < 3; i++) {
+                vec3 Lm = uLightDir[i];
+                float nl = dot(nS, Lm);
+                float chord = 2.0 * beadR * max(-nl, 0.0) + 0.10;
+                float past = smoothstep(0.45, -0.30, nl);
+                float reach = smoothstep(-0.45, 0.20, dot(outward, Lm));
+                bead += uLightCol[i] * exp(-sigma * chord) * past * reach;
+              }
+              bead *= 0.07 * uBead * open * 2.5;
+              // (b) looking through the sac at the backdrop
+              vec3 Tr = refract(-V, nBase, 1.0 / 1.33);
+              float chordV = max(2.0 * dot(-toC, Tr), 0.0);
+              float leave = smoothstep(0.30, 0.85, 1.0 - saturate(dot(outward, V)));
+              leave *= smoothstep(0.12, 0.60, ao);
+              vec3 through = uBackdrop * exp(-sigma * (chordV + 0.06)) * leave * (0.25 + 0.75 * vMask.z) * uSeeThrough * 0.55;
+              // (c) the seed, a pale blur inside
+              float SEED_R = beadR * 0.3;
+              float sb = dot(-toC, Tr);
+              float sh = sb * sb - (beadR * beadR - SEED_R * SEED_R);
+              float seedHit = smoothstep(0.0, SEED_R * SEED_R * 0.9, sh) * step(0.0, sb);
+              float sd = max(sb - sqrt(max(sh, 0.0)), 0.0);
+              vec3 seedLight = uAmbient * open + bead * 2.0;
+              vec3 seed = vec3(0.80, 0.56, 0.30) * seedLight * exp(-sigma * (sd + 0.03)) * seedHit * uSeedAmt;
+
+              vec3 glow = bead + through + seed;
+              float seeThrough = leave * saturate(uSeeThrough);
+              vec3 diffuse = sss * uSSS * (1.0 - 0.35 * seeThrough) + glow;
+
+              // ---- specular: GGX from the three lights + the synthetic studio ----
+              vec3 spec = vec3(0.0);
+              float a = roughness * roughness;
+              for (int i = 0; i < 3; i++) {
+                vec3 L = uLightDir[i];
+                vec3 H = normalize(L + V);
+                float NoL = saturate(dot(N, L)), NoH = saturate(dot(N, H)), VoH = saturate(dot(V, H));
+                float F = uF0 + (1.0 - uF0) * pow(1.0 - VoH, 5.0);
+                spec += uLightCol[i] * D_GGX(NoH, a) * V_Smith(NoV, NoL, a) * F * NoL;
+              }
+              vec3 R = reflect(-V, N);
+              R = normalize(mix(R, N, roughness * roughness));
+              vec2 dfg = envBRDF(roughness, NoV);
+              float so = saturate(pow(NoV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao);
+              float horizon = saturate(1.0 + dot(R, nBase));
+              so *= horizon * horizon;
+              float cavity = mix(1.0, 0.55 + 0.45 * dh, saturate(uPoreStrength * 2.0));
+              spec += studioEnv(R, roughness) * (uF0 * dfg.x + dfg.y) * so * cavity;
+              spec *= uSpecular;
+
+              // ---- velvet from the hairs that are too fine to draw ----
+              float fres = pow(1.0 - NoV, 3.0);
+              float localLight = dot(sss, vec3(0.33)) * 2.2;
+              vec3 sheen = uSheenColor * localLight * fres * uSheen * (0.4 + 0.6 * ao);
+
+              vec3 col = diffuse + spec + sheen;
+
+              // ---- blueberry bloom: the dusty wax that sits in the hollows and at the limb ----
+              float wax = smoothstep(0.35, 0.8, fbm(vModelPos * uBloomScale + 7.0)) * uBloom;
+              wax *= (0.5 + 0.5 * pow(1.0 - NoV, 1.5)) * mix(0.6, 1.0, vMask.y);
+              vec3 waxCol = vec3(0.78, 0.80, 0.88) * (uAmbient + 0.25 * (uLightCol[0] + uLightCol[1] + uLightCol[2])) * 0.5;
+              col = mix(col, waxCol, saturate(wax));
+
+              col += albedo * 0.02 * uPulse;
+              gl_FragColor = vec4(max(col, 0.0), 1.0);
+            }
+        `;
 
         const motion = getMotionParams();
-        const shouldInvert = rand() > 0.9;
-        const brightnessOffset = Math.min(0, Math.max(-0.2, motion.brightnessOffset));
 
-        const noiseScale = randRange(0.8, 3.2);
-        const dispStrength = randRange(0.12, 0.35);
+        // =====================================================================
+        //  MUTATION CLOCK — the dimension keeps mutating the longer you stay in it.
+        //  Growth compounds (dv ∝ 0.25 + v, so it starts slow and accelerates),
+        //  every palette jump kicks it a little further, and it saturates at 1.5.
+        //  Calm moods mutate slower, wild ones faster.
+        // =====================================================================
+        const mutation = { v: 0, rate: randRange(0.005, 0.02), max: 1.5, lineage };
+        function updateMutation(dt) {
+            mutation.v = Math.min(mutation.max, mutation.v + dt * mutation.rate * (0.25 + mutation.v) * ml(0.6, 1.4));
+        }
 
-        const mainMat = new THREE.ShaderMaterial({
-            uniforms: {
-                uTime: { value: 0 },
-                uColorA: { value: colorA },
-                uColorB: { value: colorB },
-                uColorC: { value: colorC },
-                uPulseSpeed: { value: motion.pulseSpeed },
-                uPulseAmp: { value: motion.pulseAmp * 0.05 },
-                uChaos: { value: motion.chaosFactor },
-                uInvert: { value: shouldInvert ? 1 : 0 },
-                uBrightness: { value: 1 + brightnessOffset },
-                uMetalness: { value: randRange(0.15, 0.45) },
-                uGlossiness: { value: randRange(0.35, 0.75) },
-                uSpecColor: { value: specCol },
-                uLightPos: { value: lightPos.clone() },
-                uLightColor: { value: lightColor.clone() },
-                uShadowMap: { value: keyLight.shadow.map },
-                uShadowMatrix: { value: keyLight.shadow.matrix },
-            },
-            vertexShader: `
-                uniform float uTime;
-                uniform float uChaos;
-                uniform mat4 uShadowMatrix;
-        
-                varying vec3 vWorldNormal;
-                varying vec3 vWorldPos;
-                varying float vDisplacement;
-                varying vec4 vShadowCoord;
-        
-                float hash(vec3 p) {
-                  p = fract(p * 0.3183099 + 0.1);
-                  p *= 17.0;
-                  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-                }
+        function makeBerryMaterial(o) {
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uChaos: { value: o.chaos },
+                    uNoiseScale: { value: o.noiseScale },
+                    uDispStrength: { value: o.dispStrength },
+                    uMutate: { value: 0 },
+                    uCellScale: { value: o.cellScale },
+                    uDomeR: { value: o.domeR },
+                    uDomeAmp: { value: o.domeAmp },
+                    uSeedOff: { value: new THREE.Vector3(randRange(0, 100), randRange(0, 100), randRange(0, 100)) },
+                    uAlbedo: { value: new THREE.Color() },
+                    uAlbedo2: { value: new THREE.Color() },
+                    uTransColor: { value: new THREE.Color() },
+                    uTransDepth: { value: o.transDepth },
+                    uBackdrop: { value: new THREE.Color() },
+                    uCamM: { value: new THREE.Vector3() },
+                    uLightDir: { value: [new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0)] },
+                    uLightCol: { value: [new THREE.Color(), new THREE.Color(), new THREE.Color()] },
+                    uAmbient: { value: new THREE.Color() },
+                    uBead: { value: o.bead },
+                    uSeeThrough: { value: o.seeThrough },
+                    uSeedAmt: { value: o.seedAmt },
+                    uSSS: { value: 1 },
+                    uRoughness: { value: o.roughness },
+                    uF0: { value: o.f0 },
+                    uSpecular: { value: o.specular },
+                    uSheen: { value: o.sheen },
+                    uSheenColor: { value: new THREE.Color(1, 1, 1) },
+                    uPoreScale: { value: o.poreScale },
+                    uPoreStrength: { value: o.poreStrength },
+                    uBloom: { value: o.bloom },
+                    uBloomScale: { value: o.bloomScale },
+                    uPulse: { value: 0 },
+                },
+                vertexShader: BERRY_VERT,
+                fragmentShader: BERRY_FRAG,
+                side: THREE.DoubleSide,
+            });
+        }
 
-                float noise(vec3 p) {
-                  vec3 i = floor(p);
-                  vec3 f = fract(p);
-                  f = f * f * (3.0 - 2.0 * f);
-                  return mix(
-                    mix(mix(hash(i), hash(i+vec3(1,0,0)), f.x),
-                        mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x), f.y),
-                    mix(mix(hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
-                        mix(hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x), f.y), f.z);
-                }
-        
-                float fbm(vec3 p) {
-                    float f = 0.0;
-                    float amp = 0.5;
-                    for (int i = 0; i < 3; i++) {
-                        f += amp * noise(p);
-                        p *= 2.03;
-                        amp *= 0.5;
-                    }
-                    return f;
-                }
-        
-                void main() {
-                  vec3 pos = position;
-                  float n = fbm(pos * ${noiseScale.toFixed(2)} + uTime * 0.15);
-                  float wave = sin(pos.x * 2.5 + uTime * 0.4) * 0.12 +
-                               cos(pos.y * 2.5 + uTime * 0.3) * 0.12;
-                  float chaosWave = sin(pos.x * uChaos + uTime * 0.4) * 0.15 +
-                                    cos(pos.z * uChaos + uTime * 0.3) * 0.15;
-
-                  float d = (n * 1.2 + wave + chaosWave) * ${dispStrength.toFixed(2)};
-                  pos += normal * d;
-                  vDisplacement = d;
-        
-                  vec4 worldPos = modelMatrix * vec4(pos, 1.0);
-                  vWorldPos = worldPos.xyz;
-                  vWorldNormal = normalize(mat3(modelMatrix) * normal);
-        
-                  vShadowCoord = uShadowMatrix * worldPos;
-                  gl_Position = projectionMatrix * viewMatrix * worldPos;
-                }
-            `,
-            fragmentShader: `
-                uniform vec3 uColorA;
-                uniform vec3 uColorB;
-                uniform vec3 uColorC;
-                uniform float uTime;
-                uniform float uPulseSpeed;
-                uniform float uPulseAmp;
-                uniform float uChaos;
-                uniform float uInvert;
-                uniform float uBrightness;
-                uniform float uMetalness;
-                uniform float uGlossiness;
-                uniform vec3 uSpecColor;
-                uniform vec3 uLightPos;
-                uniform vec3 uLightColor;
-                uniform sampler2D uShadowMap;
-                uniform mat4 uShadowMatrix;
-        
-                varying vec3 vWorldNormal;
-                varying vec3 vWorldPos;
-                varying float vDisplacement;
-                varying vec4 vShadowCoord;
-        
-                float sampleShadow(vec4 shadowCoord) {
-                  vec3 projCoords = shadowCoord.xyz / shadowCoord.w;
-                  projCoords = projCoords * 0.5 + 0.5;
-                  if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
-                      projCoords.y < 0.0 || projCoords.y > 1.0 ||
-                      projCoords.z < 0.0 || projCoords.z > 1.0) {
-                    return 1.0;
-                  }
-                  float closestDepth = texture2D(uShadowMap, projCoords.xy).r;
-                  float currentDepth = projCoords.z;
-                  float bias = 0.005;
-                  return (currentDepth - bias) < closestDepth ? 0.0 : 1.0;
-                }
-        
-                void main() {
-                  vec3 normal = normalize(vWorldNormal);
-                  vec3 viewDir = normalize(cameraPosition - vWorldPos);
-                  vec3 lightDir = normalize(uLightPos - vWorldPos);
-        
-                  float diff = max(dot(normal, lightDir), 0.0);
-                  vec3 diffuse = uLightColor * diff * 0.45;
-        
-                  vec3 halfDir = normalize(lightDir + viewDir);
-                  float spec = pow(max(dot(normal, halfDir), 0.0), 1.0 / max(0.01, 1.0 - uGlossiness));
-                  vec3 specular = uSpecColor * spec * uMetalness * 0.15;
-        
-                  float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), 3.0);
-                  vec3 fresnelCol = fresnel * 0.08 * mix(uColorA, uColorC, 0.5);
-        
-                  float shadow = sampleShadow(vShadowCoord);
-        
-                  vec3 baseCol;
-                  float t = clamp(vDisplacement * 3.0 + 0.5, 0.0, 1.0);
-                  if(t < 0.5) {
-                      baseCol = mix(uColorA, uColorB, t * 2.0);
-                  } else {
-                      baseCol = mix(uColorB, uColorC, (t - 0.5) * 2.0);
-                  }
-        
-                  vec3 finalCol = baseCol * (0.2 + 0.8 * shadow * diffuse) + specular + fresnelCol;
-                  finalCol += baseCol * 0.12;
-        
-                  float pulse = 0.5 + 0.5 * sin(uTime * uPulseSpeed);
-                  finalCol += vec3(0.004, 0.002, 0.005) * pulse * uPulseAmp;
-        
-                  finalCol = clamp(finalCol, 0.0, 1.0);
-                  finalCol = mix(finalCol, 1.0 - finalCol, uInvert);
-                  finalCol *= uBrightness;
-        
-                  gl_FragColor = vec4(finalCol, 1.0);
-                }
-            `,
-            transparent: false,
-            side: THREE.DoubleSide,
-            wireframe: false,
-        });
+        // the main berry: every seed grows a different skin
+        const skin = {
+            chaos: motion.chaosFactor,
+            noiseScale: randRange(0.6, 2.4),
+            dispStrength: randRange(0.1, 0.4),
+            cellScale: randRange(1.6, 7.5) * (3.0 / Math.max(1.5, mainRadius)),
+            domeR: randRange(0.45, 0.72),
+            domeAmp: randRange(0.05, 0.28) * Math.max(0.8, mainRadius / 3),
+            transDepth: randRange(0.1, 0.45),
+            bead: randRange(0.6, 1.6),
+            seeThrough: randRange(0.3, 1.2),
+            seedAmt: rand() < 0.6 ? randRange(0.1, 0.5) : 0,
+            roughness: randRange(0.08, 0.45),
+            f0: Math.pow((1.33 - 1) / (1.33 + 1), 2) * randRange(0.8, 2.5),
+            specular: randRange(0.6, 1.6),
+            sheen: randRange(0.1, 0.9),
+            poreScale: randRange(18, 70),
+            poreStrength: randRange(0.05, 0.5),
+            bloom: rand() < 0.65 ? randRange(0.2, 0.9) : 0,     // blueberry wax, most of the time
+            bloomScale: randRange(0.4, 3.0),
+        };
+        const mainMat = makeBerryMaterial(skin);
+        const berryMats = [mainMat];
 
         const mainMesh = new THREE.Mesh(mainGeo, mainMat);
         mainMesh.castShadow = true;
         mainMesh.receiveShadow = true;
         scene.add(mainMesh);
 
-        const wireMat = new THREE.MeshBasicMaterial({
-            color: 0x002c9c,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.2,
-        });
+        const wireMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: randRange(0.04, 0.16) });
         const wireMesh = new THREE.Mesh(mainGeo.clone(), wireMat);
         wireMesh.scale.set(1.01, 1.01, 1.01);
-        wireMesh.castShadow = false;
-        wireMesh.receiveShadow = false;
         scene.add(wireMesh);
 
-        const satelliteCount = randInt(1, 10);
+        // ---- satellites: a swarm, half of them small berries of their own ----
+        const satelliteCount = randInt(2, 14);
         const satellites = [];
 
         function createSatelliteShader(baseColor, invert, brightness) {
-            const hueShift = randRange(0, 1);
             const glitchAmt = randRange(0.2, 0.8);
             const speed = randRange(1.0, 4.0);
             const mode = randInt(0, 4);
@@ -1088,64 +1756,24 @@
                     uBaseColor: { value: baseColor.clone() },
                     uInvert: { value: invert ? 1 : 0 },
                     uBrightness: { value: brightness },
-                    uHueShift: { value: hueShift },
                     uGlitchAmt: { value: glitchAmt },
                     uSpeed: { value: speed },
                     uMode: { value: mode },
                 },
                 vertexShader: `
-                varying vec3 vPos;
-                varying vec3 vNormal;
-                void main() {
-                  vPos = position;
-                  vNormal = normalize(normalMatrix * normal);
-                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
+                varying vec3 vPos; varying vec3 vNormal;
+                void main() { vPos = position; vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
               `,
                 fragmentShader: `
-                uniform vec3 uBaseColor;
-                uniform float uTime;
-                uniform float uInvert;
-                uniform float uBrightness;
-                uniform float uHueShift;
-                uniform float uGlitchAmt;
-                uniform float uSpeed;
-                uniform int uMode;
-
-                varying vec3 vPos;
-                varying vec3 vNormal;
-
-                vec3 hsv2rgb(vec3 c) {
-                  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
-                  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-                  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-                }
-
+                uniform vec3 uBaseColor; uniform float uTime, uInvert, uBrightness, uGlitchAmt, uSpeed; uniform int uMode;
+                varying vec3 vPos; varying vec3 vNormal;
                 void main() {
                   vec3 col = uBaseColor;
-                  if (uMode == 0) {
-                    float hue = uHueShift + uTime * 0.05 * uSpeed;
-                    col = hsv2rgb(vec3(hue, 0.9, 0.6));
-                  } else if (uMode == 1) {
-                    float r = sin(vPos.x * 20.0 + uTime * 15.0 * uSpeed) * uGlitchAmt;
-                    float g = cos(vPos.y * 20.0 + uTime * 12.0 * uSpeed) * uGlitchAmt;
-                    float b = sin(vPos.z * 20.0 + uTime * 18.0 * uSpeed) * uGlitchAmt;
-                    col = vec3(uBaseColor.r + r, uBaseColor.g + g, uBaseColor.b + b);
-                  } else if (uMode == 2) {
-                    float angle = atan(vPos.z, vPos.x);
-                    float radius = length(vPos.xy);
-                    float swirl = sin(radius * 10.0 - angle * 4.0 + uTime * uSpeed);
-                    float hue = uHueShift + swirl * 0.3;
-                    col = hsv2rgb(vec3(hue, 0.9, 0.6));
-                  } else if (uMode == 3) {
-                    float wave = sin(vPos.x * 5.0 + vPos.y * 5.0 + uTime * uSpeed);
-                    col = mix(uBaseColor, 1.0 - uBaseColor, abs(wave) * 0.8);
-                  } else {
-                    float sparkle = sin(vPos.x * 30.0 + vPos.y * 30.0 + uTime * 20.0 * uSpeed);
-                    float hue = uHueShift + uTime * 0.02 * uSpeed;
-                    vec3 rainbow = hsv2rgb(vec3(hue, 0.9, 0.6));
-                    col = mix(uBaseColor, rainbow, 0.7 * abs(sparkle));
-                  }
+                  if (uMode == 0) { col = vec3(0.5 + 0.5 * sin(uTime * uSpeed + vNormal.y * 3.0)); }
+                  else if (uMode == 1) { float r = sin(vPos.x * 20.0 + uTime * 15.0 * uSpeed) * uGlitchAmt; col = uBaseColor + r; }
+                  else if (uMode == 2) { float angle = atan(vPos.z, vPos.x); float radius = length(vPos.xy); col = vec3(0.5 + 0.5 * sin(radius * 10.0 - angle * 4.0 + uTime * uSpeed)); }
+                  else if (uMode == 3) { float wave = sin(vPos.x * 5.0 + vPos.y * 5.0 + uTime * uSpeed); col = mix(uBaseColor, 1.0 - uBaseColor, abs(wave) * 0.8); }
+                  else { float sparkle = sin(vPos.x * 30.0 + vPos.y * 30.0 + uTime * 20.0 * uSpeed); col = mix(uBaseColor, vec3(1.0), 0.7 * abs(sparkle)); }
                   col = mix(col, 1.0 - col, uInvert);
                   col *= uBrightness;
                   gl_FragColor = vec4(col, 0.9);
@@ -1160,146 +1788,106 @@
             const c = seededColor();
             const satBrightness = 0.3 + 0.7 * rand();
             const satInvert = rand() > 0.5;
-            const size = randRange(0.04, 0.35);
-            const geoType = randInt(0, 4);
+            const size = randRange(0.08, 0.7);
+            const geoType = randInt(0, 5);
             let satGeo;
             switch (geoType) {
-                case 0:
-                    satGeo = new THREE.IcosahedronGeometry(size, randInt(0, 2));
-                    break;
-                case 1:
-                    satGeo = new THREE.OctahedronGeometry(size);
-                    break;
-                case 2:
-                    satGeo = new THREE.DodecahedronGeometry(size);
-                    break;
-                case 3:
-                    satGeo = new THREE.BoxGeometry(size, size * randRange(0.5, 2), size * randRange(0.5, 2));
-                    break;
-                case 4:
-                    satGeo = new THREE.TetrahedronGeometry(size);
-                    break;
+                case 0: satGeo = new THREE.IcosahedronGeometry(size, randInt(1, 3)); break;
+                case 1: satGeo = new THREE.OctahedronGeometry(size, randInt(0, 2)); break;
+                case 2: satGeo = new THREE.DodecahedronGeometry(size, randInt(0, 2)); break;
+                case 3: satGeo = new THREE.BoxGeometry(size, size * randRange(0.5, 2), size * randRange(0.5, 2), 6, 6, 6); break;
+                case 4: satGeo = new THREE.TetrahedronGeometry(size, randInt(0, 2)); break;
+                case 5: satGeo = new THREE.TorusKnotGeometry(size * 0.6, size * 0.2, 80, 12, randInt(1, 4), randInt(2, 5)); break;
             }
-            const satMat = createSatelliteShader(c, satInvert, satBrightness);
+            let satMat;
+            if (rand() < 0.55) {
+                satMat = makeBerryMaterial({
+                    chaos: motion.chaosFactor,
+                    noiseScale: randRange(1.5, 4), dispStrength: randRange(0.01, 0.06),
+                    cellScale: randRange(6, 18), domeR: randRange(0.45, 0.7), domeAmp: randRange(0.01, 0.05),
+                    transDepth: randRange(0.05, 0.2), bead: randRange(0.6, 1.5), seeThrough: randRange(0.3, 1), seedAmt: randRange(0, 0.4),
+                    roughness: randRange(0.08, 0.4), f0: 0.02 * randRange(0.8, 2.5), specular: randRange(0.7, 1.5), sheen: randRange(0.1, 0.8),
+                    poreScale: randRange(40, 120), poreStrength: randRange(0.05, 0.4), bloom: rand() < 0.6 ? randRange(0.2, 0.9) : 0, bloomScale: randRange(2, 8),
+                });
+                berryMats.push(satMat);
+            } else {
+                satMat = createSatelliteShader(c, satInvert, satBrightness);
+            }
             const sat = new THREE.Mesh(satGeo, satMat);
             sat.castShadow = true;
             sat.receiveShadow = true;
-            const angle = randRange(0, Math.PI * 2);
-            const radius = randRange(1.8, 6.0);
-            const heightOffset = randRange(-2.0, 2.0);
-            const speed = randRange(0.1, 2.0);
-            const phase = randRange(0, Math.PI * 2);
-            const orbitTilt = randRange(-0.8, 0.8);
             sat.userData = {
-                angle,
-                radius,
-                heightOffset,
-                speed,
-                phase,
-                orbitTilt,
-                brightness: satBrightness,
-                invert: satInvert,
-                baseColor: c.clone(),
+                angle: randRange(0, Math.PI * 2),
+                radius: randRange(mainRadius * 0.9, mainRadius * 2.2),
+                heightOffset: randRange(-3.0, 3.0),
+                speed: randRange(0.1, 2.0),
+                phase: randRange(0, Math.PI * 2),
+                orbitTilt: randRange(-0.8, 0.8),
                 mat: satMat,
             };
             scene.add(sat);
             satellites.push(sat);
         }
 
+        // ---- folding planes ----
         const foldGroups = [];
         const foldCount = randInt(1, 8);
         for (let i = 0; i < foldCount; i++) {
             const foldGroup = new THREE.Group();
             const planesPerGroup = randInt(3, 8);
             for (let j = 0; j < planesPerGroup; j++) {
-                const w = randRange(4, 12);
-                const h = randRange(4, 16);
-                const segW = randInt(2, 6);
-                const segH = randInt(2, 6);
-                const geometry = new THREE.PlaneGeometry(w, h, segW, segH);
+                const w = randRange(4, 14), h = randRange(4, 18);
+                const geometry = new THREE.PlaneGeometry(w, h, randInt(2, 6), randInt(2, 6));
                 const brightness = 0.2 + rand() * 0.6;
                 const c = seededColor();
                 const material = new THREE.MeshPhongMaterial({
-                    color: c,
-                    transparent: true,
-                    opacity: 0.7 + 0.3 * rand(),
-                    side: THREE.DoubleSide,
-                    shininess: 50 + rand() * 150,
-                    emissive: c.clone().multiplyScalar(0.2 + rand() * 0.3),
+                    color: c, transparent: true, opacity: 0.45 + 0.35 * rand(), side: THREE.DoubleSide,
+                    shininess: 50 + rand() * 150, emissive: c.clone().multiplyScalar(0.2 + rand() * 0.3),
                 });
                 const plane = new THREE.Mesh(geometry, material);
-                plane.castShadow = false;
-                plane.receiveShadow = false;
-                plane.position.set(randRange(-30, 30), randRange(-20, 20), randRange(-30, 30));
-                plane.userData = {
-                    originalPos: plane.position.clone(),
-                    foldPhase: randRange(0, Math.PI * 4),
-                    baseBrightness: brightness,
-                    colorShift: randRange(0, 0.5),
-                    hueSpeed: randRange(0.02, 0.08),
-                };
+                plane.position.set(randRange(-36, 36), randRange(-24, 24), randRange(-36, 36));
+                plane.userData = { originalPos: plane.position.clone(), foldPhase: randRange(0, Math.PI * 4), baseBrightness: brightness, colorShift: randRange(0, 0.5), hueSpeed: randRange(0.02, 0.08) };
                 foldGroup.add(plane);
             }
             foldGroups.push(foldGroup);
             scene.add(foldGroup);
         }
 
+        // ---- drifting geometric debris ----
         const geometricShapes = [];
-        const shapeCount = randInt(10, 30);
+        const shapeCount = randInt(12, 36);
         for (let i = 0; i < shapeCount; i++) {
-            const type = randInt(0, 5);
+            const type = randInt(0, 6);
             let geometry;
             switch (type) {
-                case 0:
-                    geometry = new THREE.ConeGeometry(randRange(1, 4), randRange(3, 10), randInt(3, 8));
-                    break;
-                case 1:
-                    geometry = new THREE.BoxGeometry(randRange(2, 6), randRange(1, 4), randRange(4, 12));
-                    break;
-                case 2:
-                    geometry = new THREE.CylinderGeometry(randRange(0.5, 3), randRange(1, 5), randRange(4, 12), randInt(4, 10));
-                    break;
-                case 3:
-                    geometry = new THREE.TorusGeometry(randRange(1, 4), randRange(0.2, 1), randInt(8, 24), randInt(8, 24));
-                    break;
-                case 4:
-                    geometry = new THREE.IcosahedronGeometry(randRange(1, 4), randInt(0, 2));
-                    break;
-                case 5:
-                    geometry = new THREE.DodecahedronGeometry(randRange(1, 4));
-                    break;
+                case 0: geometry = new THREE.ConeGeometry(randRange(1, 5), randRange(3, 12), randInt(3, 8)); break;
+                case 1: geometry = new THREE.BoxGeometry(randRange(2, 7), randRange(1, 5), randRange(4, 14)); break;
+                case 2: geometry = new THREE.CylinderGeometry(randRange(0.5, 3), randRange(1, 5), randRange(4, 14), randInt(4, 10)); break;
+                case 3: geometry = new THREE.TorusGeometry(randRange(1, 5), randRange(0.2, 1.2), randInt(8, 24), randInt(8, 24)); break;
+                case 4: geometry = new THREE.IcosahedronGeometry(randRange(1, 5), randInt(0, 2)); break;
+                case 5: geometry = new THREE.DodecahedronGeometry(randRange(1, 5)); break;
+                case 6: geometry = new THREE.TorusKnotGeometry(randRange(1, 3), randRange(0.2, 0.8), 64, 10, randInt(1, 4), randInt(2, 7)); break;
             }
             const brightness = 0.3 + rand() * 0.4;
             const c = seededColor();
-            const material = new THREE.MeshPhongMaterial({
-                color: c,
-                transparent: true,
-                opacity: 0.6 + 0.4 * rand(),
-                shininess: 50 + rand() * 150,
-                emissive: c.clone().multiplyScalar(0.1 + rand() * 0.3),
-            });
+            const material = new THREE.MeshPhongMaterial({ color: c, transparent: true, opacity: 0.6 + 0.4 * rand(), shininess: 50 + rand() * 150, emissive: c.clone().multiplyScalar(0.1 + rand() * 0.3) });
             const shape = new THREE.Mesh(geometry, material);
-            shape.castShadow = false;
-            shape.receiveShadow = false;
-            shape.position.set(randRange(-40, 40), randRange(-30, 30), randRange(-40, 40));
+            shape.position.set(randRange(-48, 48), randRange(-34, 34), randRange(-48, 48));
             shape.userData = {
                 originalPos: shape.position.clone(),
                 rotationSpeed: new THREE.Vector3(randRange(-0.03, 0.03), randRange(-0.03, 0.03), randRange(-0.03, 0.03)),
-                oscillationPhase: randRange(0, Math.PI * 2),
-                baseBrightness: brightness,
-                mat: material,
-                hueOffset: randRange(0, 1),
-                hueSpeed: randRange(0.01, 0.06),
+                oscillationPhase: randRange(0, Math.PI * 2), baseBrightness: brightness, mat: material, hueOffset: randRange(0, 1), hueSpeed: randRange(0.01, 0.06),
             };
             geometricShapes.push(shape);
             scene.add(shape);
         }
 
-        const particleCount = randInt(300, 500);
+        // ---- particles ----
+        const particleCount = randInt(400, 900);
+        BOOT.stage(80, 'ORBITS', 'ORBIT', satellites.length + ' satellites  ·  ' + particleCount.toLocaleString() + ' particles');
         const particleGeo = new THREE.BufferGeometry();
         const partPos = new Float32Array(particleCount * 3);
         const partColors = new Float32Array(particleCount * 3);
-        const partSizes = new Float32Array(particleCount);
         const spread = motion.particleSpread;
         for (let i = 0; i < particleCount; i++) {
             const i3 = i * 3;
@@ -1309,318 +1897,199 @@
             partPos[i3] = r * Math.sin(phi) * Math.cos(theta);
             partPos[i3 + 1] = r * Math.cos(phi);
             partPos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-            const c = seededColor();
-            const bright = 0.2 + 0.6 * rand();
-            const invert = rand() > 0.5;
-            partColors[i3] = invert ? (1 - c.r) * bright : c.r * bright;
-            partColors[i3 + 1] = invert ? (1 - c.g) * bright : c.g * bright;
-            partColors[i3 + 2] = invert ? (1 - c.b) * bright : c.b * bright;
-            partSizes[i] = randRange(0.01, 0.15);
+            const bright = 0.2 + 0.8 * rand();
+            partColors[i3] = bright; partColors[i3 + 1] = bright; partColors[i3 + 2] = bright;
         }
         particleGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
         particleGeo.setAttribute('color', new THREE.BufferAttribute(partColors, 3));
-        particleGeo.setAttribute('size', new THREE.BufferAttribute(partSizes, 1));
-
-        const partMat = new THREE.PointsMaterial({
-            size: 0.035,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.7 + 0.3 * rand(),
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            sizeAttenuation: true,
-        });
+        const partMat = new THREE.PointsMaterial({ size: 0.045, vertexColors: true, transparent: true, opacity: 0.7 + 0.3 * rand(), blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
         const particleSystem = new THREE.Points(particleGeo, partMat);
         scene.add(particleSystem);
 
-        const ringCount = randInt(3, 12);
+        // ---- rings ----
+        const ringCount = randInt(3, 14);
         const rings = [];
         for (let i = 0; i < ringCount; i++) {
-            const r = randRange(0.5, 3.0);
-            const t = randRange(0.02, 0.15);
-            const seg = randInt(12, 64);
-            const ringGeo = new THREE.TorusGeometry(r, t, 8, seg);
-            const c = seededColor();
-            const bright = 0.3 + 0.4 * rand();
-            const invert = rand() > 0.5;
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: invert ? new THREE.Color(1 - c.r, 1 - c.g, 1 - c.b).multiplyScalar(bright) : c.clone().multiplyScalar(
-                    bright),
-                transparent: true,
-                opacity: 0.1 + 0.3 * rand(),
-                wireframe: rand() > 0.5,
-            });
+            const r = randRange(0.8, mainRadius * 1.4);
+            const t = randRange(0.02, 0.2);
+            const ringGeo = new THREE.TorusGeometry(r, t, 8, randInt(12, 64));
+            const bright = 0.3 + 0.5 * rand();
+            const ringMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(bright, bright, bright), transparent: true, opacity: 0.1 + 0.35 * rand(), wireframe: rand() > 0.5 });
             const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.castShadow = false;
-            ring.receiveShadow = false;
             ring.rotation.x = randRange(0, Math.PI * 2);
             ring.rotation.y = randRange(0, Math.PI * 2);
-            ring.position.set(randRange(-2.0, 2.0), randRange(-1.0, 1.0), randRange(-2.0, 2.0));
             ring.userData = {
-                rotSpeedX: randRange(-0.8, 0.8),
-                rotSpeedY: randRange(-0.8, 0.8),
-                rotSpeedZ: randRange(-0.8, 0.8),
-                orbitSpeed: randRange(0.1, 0.9),
-                orbitRadius: randRange(0.3, 2.2),
-                phase: randRange(0, Math.PI * 2),
-                mat: ringMat,
-                hueOffset: randRange(0, 1),
-                hueSpeed: randRange(0.02, 0.08),
-                baseColor: c.clone(),
-                invert: invert,
-                bright: bright,
+                rotSpeedX: randRange(-0.8, 0.8), rotSpeedY: randRange(-0.8, 0.8), rotSpeedZ: randRange(-0.8, 0.8),
+                orbitSpeed: randRange(0.1, 0.9), orbitRadius: randRange(0.3, 3.0), phase: randRange(0, Math.PI * 2), mat: ringMat, bright,
             };
             scene.add(ring);
             rings.push(ring);
         }
 
-        const cloudTexture = new THREE.CanvasTexture((() => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.4, 'rgba(255,255,255,0.8)');
-            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 64, 64);
-            return canvas;
-        })());
-
-        const cloudShader = {
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D map;
-                uniform vec3 fogColor;
-                uniform float fogNear;
-                uniform float fogFar;
-                varying vec2 vUv;
-                void main() {
-                    float depth = gl_FragCoord.z / gl_FragCoord.w;
-                    float fogFactor = smoothstep(fogNear, fogFar, depth);
-                    gl_FragColor = texture2D(map, vUv);
-                    gl_FragColor.w *= pow(gl_FragCoord.z, 20.0);
-                    gl_FragColor = mix(gl_FragColor, vec4(fogColor, gl_FragColor.w), fogFactor);
-                }
-            `,
-        };
-
-        const cloudFog = new THREE.Fog(0x4584b4, -100, 3000);
-        const cloudMat = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: cloudTexture },
-                fogColor: { value: cloudFog.color },
-                fogNear: { value: cloudFog.near },
-                fogFar: { value: cloudFog.far },
-            },
-            vertexShader: cloudShader.vertexShader,
-            fragmentShader: cloudShader.fragmentShader,
-            depthWrite: false,
-            depthTest: false,
-            transparent: true,
-        });
-
-        const cloudCount = randInt(2000, 8000);
-        const cloudGeos = [];
-        for (let i = 0; i < cloudCount; i++) {
-            const planeGeo = new THREE.PlaneGeometry(randRange(20, 80), randRange(20, 80));
-            const obj = new THREE.Object3D();
-            obj.position.set(randRange(-500, 500), randRange(-200, -20), randRange(-500, 500));
-            obj.rotation.z = randRange(0, Math.PI * 2);
-            const sc = randRange(0.5, 2.0);
-            obj.scale.set(sc, sc, sc);
-            obj.updateMatrix();
-            const clone = planeGeo.clone();
-            clone.applyMatrix4(obj.matrix);
-            cloudGeos.push(clone);
-        }
-        const mergedClouds = mergeGeometries(cloudGeos);
-        const cloudMesh = new THREE.Mesh(mergedClouds, cloudMat);
-        cloudMesh.renderOrder = 0;
-        scene.add(cloudMesh);
-
-        const cloudMesh2 = cloudMesh.clone();
-        cloudMesh2.position.z = -2000;
-        cloudMesh2.renderOrder = 0;
-        scene.add(cloudMesh2);
-
+        // =====================================================================
+        //  ANIMATE
+        // =====================================================================
         const clock = new THREE.Clock();
+        const _q = new THREE.Quaternion(), _invQ = new THREE.Quaternion(), _v = new THREE.Vector3(), _m = new THREE.Matrix4();
+        const _skinA = new THREE.Color(), _skinB = new THREE.Color(), _trans = new THREE.Color(), _back = new THREE.Color(), _amb = new THREE.Color();
+        const WHITE = new THREE.Color(1, 1, 1);
+        const lightDirsWorld = [keyLight, fillLight, rimLight].map(l => l.position.clone().normalize());
+        const lightInt = [keyI, fillI, rimI];
 
+        function feedBerry(mat, mesh) {
+            const u = mat.uniforms;
+            mesh.updateMatrixWorld();
+            _m.copy(mesh.matrixWorld).invert();
+            u.uCamM.value.copy(camera.position).applyMatrix4(_m);
+            mesh.getWorldQuaternion(_q);
+            _invQ.copy(_q).invert();
+            for (let i = 0; i < 3; i++) {
+                u.uLightDir.value[i].copy(lightDirsWorld[i]).applyQuaternion(_invQ).normalize();
+                u.uLightCol.value[i].copy(_skinB).lerp(WHITE, 0.5).multiplyScalar(lightInt[i] * 0.95);
+            }
+            u.uAlbedo.value.copy(_skinA);
+            u.uAlbedo2.value.copy(_skinB);
+            u.uTransColor.value.copy(_trans);
+            u.uBackdrop.value.copy(_back);
+            u.uAmbient.value.copy(_amb);
+        }
+
+        let lastT = 0, bootDone = false;
         function animate() {
             const elapsed = clock.getElapsedTime();
-        
+            const dt = Math.min(0.1, elapsed - lastT); lastT = elapsed;
             controls.update();
-        
+            updateMood(dt);
+            updateMutation(dt);
+            updatePalette(elapsed);
+            // calm seeds barely flinch when the palette lands; wild ones take the full hit
+            const kick = palette.kick * ml(0.15, 1.0);
+
+            // derive every colour the berry needs from the two palette colours
+            _skinA.copy(palette.a);
+            _skinB.copy(palette.b);
+            _trans.copy(palette.b).lerp(palette.a, 0.5).multiplyScalar(0.75);    // juice: between the two, a little darker
+            _back.copy(palette.a).multiplyScalar(0.35).lerp(palette.b, 0.15);
+            _amb.copy(palette.a).lerp(WHITE, 0.5).multiplyScalar(0.3);
+
             bgMat.uniforms.uTime.value = elapsed;
-            mainMat.uniforms.uTime.value = elapsed;
-            mainMat.uniforms.uShadowMatrix.value = keyLight.shadow.matrix;
-        
+            duotonePass.uniforms.uGrainT.value = elapsed;
+            duotonePass.uniforms.uGrain.value = ml(0.004, 0.012);
+            duotonePass.uniforms.uKick.value = kick;
+            if (filmNoise) filmNoise.value = ml(0.03, 0.14);
+            afterimagePass.uniforms['damp'].value = ml(0.80, 0.94);
+
             const seedChaos = motion.chaosFactor || 1.0;
-            const ambientHue = (elapsed * 0.03 * seedChaos) % 1.0;
-            ambientLight.color.setHSL(ambientHue, 0.8, 0.12);
-            ambientLight.intensity = 0.2 + 0.15 * Math.sin(elapsed * 1.2 * seedChaos);
             const pulseFactor = Math.sin(elapsed * motion.pulseSpeed * 0.5) * 0.5 + 0.5;
-        
+            const kickScale = 1 + kick * kick * 0.12;                      // everything flinches together when the palette lands
+
             mainMesh.rotation.x = elapsed * motion.rotSpeedX * 0.3 + Math.sin(elapsed * 0.2 * seedChaos) * 0.15;
             mainMesh.rotation.y = elapsed * motion.rotSpeedY * 0.3 + Math.cos(elapsed * 0.25 * seedChaos) * 0.15;
             mainMesh.rotation.z = elapsed * motion.rotSpeedZ * 0.3 + Math.sin(elapsed * 0.15) * 0.1;
-
-            
-            const bob = Math.sin(elapsed * motion.bobSpeed) * motion.bobAmp * 0.4 + Math.cos(elapsed * 1.2) * 0.05;
-            mainMesh.position.y = bob;
-            const chaosOffset = Math.sin(elapsed * seedChaos * 0.5) * 0.3 + Math.cos(elapsed * 0.3) * 0.1;
-            mainMesh.position.x = chaosOffset;
+            mainMesh.position.y = Math.sin(elapsed * motion.bobSpeed) * motion.bobAmp * 0.4 + Math.cos(elapsed * 1.2) * 0.05;
+            mainMesh.position.x = Math.sin(elapsed * seedChaos * 0.5) * 0.3 + Math.cos(elapsed * 0.3) * 0.1;
             mainMesh.position.z = Math.sin(elapsed * 0.4) * 0.2;
-        
+            mainMesh.scale.setScalar(kickScale);
+            mainMat.uniforms.uTime.value = elapsed;
+            mainMat.uniforms.uPulse.value = pulseFactor;
+            mainMat.uniforms.uMutate.value = mutation.v;
+            feedBerry(mainMat, mainMesh);
+
             wireMesh.rotation.copy(mainMesh.rotation);
             wireMesh.position.copy(mainMesh.position);
-            const wireScale = 1 + 0.03 * Math.sin(elapsed * 3.0);
+            const wireScale = (1 + 0.03 * Math.sin(elapsed * 3.0)) * kickScale;
             wireMesh.scale.set(wireScale, wireScale, wireScale);
-        
+
             for (const sat of satellites) {
                 const { angle, radius, heightOffset, speed, phase, orbitTilt, mat } = sat.userData;
                 const a = angle + elapsed * speed * 0.4 + Math.sin(elapsed * 0.1 + phase) * 0.2;
                 const currentRadius = radius + Math.sin(elapsed * 0.5 + phase) * 0.4;
-                const x = Math.cos(a) * currentRadius;
-                const z = Math.sin(a) * currentRadius;
-                const y = heightOffset + Math.sin(elapsed * speed * 0.7 + phase) * 0.8 + Math.cos(elapsed * 0.3) * 0.3;
-
-                sat.position.set(x, y, z);
+                sat.position.set(Math.cos(a) * currentRadius, heightOffset + Math.sin(elapsed * speed * 0.7 + phase) * 0.8 + Math.cos(elapsed * 0.3) * 0.3, Math.sin(a) * currentRadius);
                 sat.rotation.x = elapsed * 0.5 + phase + orbitTilt + Math.sin(elapsed + phase);
                 sat.rotation.y = elapsed * 0.3 + phase * 0.5 + Math.cos(elapsed * 0.8);
                 sat.rotation.z = orbitTilt * 0.5 + Math.sin(elapsed * 0.4);
-
-                const scale = 1 + 0.35 * Math.sin(elapsed * 0.8 + phase) * pulseFactor;
+                const scale = (1 + 0.35 * Math.sin(elapsed * 0.8 + phase) * pulseFactor) * kickScale;
                 sat.scale.set(scale, scale, scale);
-            
-                if (mat.uniforms) mat.uniforms.uTime.value = elapsed;
+                mat.uniforms.uTime.value = elapsed;
+                if (mat.uniforms.uCamM) { mat.uniforms.uPulse.value = pulseFactor; mat.uniforms.uMutate.value = mutation.v * 0.6; feedBerry(mat, sat); }
             }
-        
+
             foldGroups.forEach((group) => {
                 group.children.forEach((plane) => {
-                    const userData = plane.userData;
-                    const foldAmount = Math.sin(elapsed * 0.5 + userData.foldPhase) * 1.2;
-                    plane.rotation.x = foldAmount + Math.sin(elapsed * 0.2) * 0.2;
-                    plane.rotation.y = Math.cos(elapsed * 0.3 + userData.foldPhase) * 0.8;
-                    plane.rotation.z = Math.sin(elapsed * 0.7 + userData.foldPhase) * 0.6;
-
-                    plane.position.copy(userData.originalPos);
-                    plane.position.x += Math.sin(elapsed * 0.4 + userData.foldPhase) * 10 + Math.cos(elapsed * 0.2) * 2;
-                    plane.position.y += Math.cos(elapsed * 0.6 + userData.foldPhase) * 8 + Math.sin(elapsed * 0.3) * 2;
-                    plane.position.z += Math.sin(elapsed * 0.8 + userData.foldPhase) * 14;
-
-                    const brightnessModulation = Math.sin(elapsed * 2.5 + userData.foldPhase) * 0.35 + 0.65;
-                    const brightness = Math.min(0.9, userData.baseBrightness * brightnessModulation);
-                    const hue = (userData.colorShift + elapsed * userData.hueSpeed * 0.8) % 1;
-                    const col = new THREE.Color().setHSL(hue, 0.85 + 0.15 * Math.sin(elapsed * 0.5 + userData.foldPhase), brightness);
-
-                    plane.material.color.copy(col);
-                    plane.material.emissive.copy(col).multiplyScalar(0.4 + 0.4 * Math.sin(elapsed * 0.7 + userData.foldPhase));
+                    const ud = plane.userData;
+                    plane.rotation.x = Math.sin(elapsed * 0.5 + ud.foldPhase) * 1.2 + Math.sin(elapsed * 0.2) * 0.2;
+                    plane.rotation.y = Math.cos(elapsed * 0.3 + ud.foldPhase) * 0.8;
+                    plane.rotation.z = Math.sin(elapsed * 0.7 + ud.foldPhase) * 0.6;
+                    plane.position.copy(ud.originalPos);
+                    plane.position.x += Math.sin(elapsed * 0.4 + ud.foldPhase) * 10 + Math.cos(elapsed * 0.2) * 2;
+                    plane.position.y += Math.cos(elapsed * 0.6 + ud.foldPhase) * 8 + Math.sin(elapsed * 0.3) * 2;
+                    plane.position.z += Math.sin(elapsed * 0.8 + ud.foldPhase) * 14;
+                    const b = Math.min(0.9, ud.baseBrightness * (Math.sin(elapsed * 2.5 + ud.foldPhase) * 0.35 + 0.65));
+                    plane.material.color.setScalar(b);
+                    plane.material.emissive.setScalar(b * (0.12 + 0.12 * Math.sin(elapsed * 0.7 + ud.foldPhase)));
                 });
                 group.rotation.y = Math.sin(elapsed * 0.2) * 0.4 + Math.cos(elapsed * 0.1) * 0.2;
                 group.rotation.x = Math.cos(elapsed * 0.15) * 0.15;
             });
-        
+
             geometricShapes.forEach((shape) => {
-                const userData = shape.userData;
-                shape.rotation.x += userData.rotationSpeed.x * (1 + pulseFactor * 0.5);
-                shape.rotation.y += userData.rotationSpeed.y * (1 + pulseFactor * 0.5);
-                shape.rotation.z += userData.rotationSpeed.z;
-
-                shape.position.copy(userData.originalPos);
-                shape.position.x += Math.sin(elapsed * 0.5 + userData.oscillationPhase) * 18 + Math.cos(elapsed * 0.3) * 4;
-                shape.position.y += Math.cos(elapsed * 0.7 + userData.oscillationPhase) * 14 + Math.sin(elapsed * 0.4) * 4;
-                shape.position.z += Math.sin(elapsed * 0.9 + userData.oscillationPhase) * 10;
-
-                const brightnessModulation = Math.sin(elapsed * 3.5 + userData.oscillationPhase) * 0.45 + 0.55;
-                const brightness = Math.min(0.85, userData.baseBrightness * brightnessModulation);
-                const hue = (userData.hueOffset + elapsed * userData.hueSpeed) % 1;
-                const col = new THREE.Color().setHSL(hue, 0.85 + 0.15 * Math.sin(elapsed * 0.5 + userData.oscillationPhase), brightness * 0.7);
-
-                shape.material.color.copy(col);
-                shape.material.emissive.copy(col).multiplyScalar(0.4 + 0.4 * Math.sin(elapsed * 0.8 + userData.oscillationPhase));
-
-                const scale = 1 + Math.sin(elapsed * 2.5 + userData.oscillationPhase) * 0.4;
-                shape.scale.setScalar(scale);
+                const ud = shape.userData;
+                shape.rotation.x += ud.rotationSpeed.x * (1 + pulseFactor * 0.5);
+                shape.rotation.y += ud.rotationSpeed.y * (1 + pulseFactor * 0.5);
+                shape.rotation.z += ud.rotationSpeed.z;
+                shape.position.copy(ud.originalPos);
+                shape.position.x += Math.sin(elapsed * 0.5 + ud.oscillationPhase) * 18 + Math.cos(elapsed * 0.3) * 4;
+                shape.position.y += Math.cos(elapsed * 0.7 + ud.oscillationPhase) * 14 + Math.sin(elapsed * 0.4) * 4;
+                shape.position.z += Math.sin(elapsed * 0.9 + ud.oscillationPhase) * 10;
+                const b = Math.min(0.85, ud.baseBrightness * (Math.sin(elapsed * 3.5 + ud.oscillationPhase) * 0.45 + 0.55)) * 0.7;
+                shape.material.color.setScalar(b);
+                shape.material.emissive.setScalar(b * (0.15 + 0.15 * Math.sin(elapsed * 0.8 + ud.oscillationPhase)));
+                shape.scale.setScalar((1 + Math.sin(elapsed * 2.5 + ud.oscillationPhase) * 0.4) * kickScale);
             });
-        
+
             const pos = particleSystem.geometry.attributes.position.array;
+            const angleStep = 0.0008 * seedChaos, cosA = Math.cos(angleStep), sinA = Math.sin(angleStep);
             for (let i = 0; i < particleCount; i++) {
                 const i3 = i * 3;
-                const px = pos[i3];
-                const py = pos[i3 + 1];
-                const pz = pos[i3 + 2];
-            
-                const angleStep = 0.0008 * seedChaos;
-                const cosA = Math.cos(angleStep);
-                const sinA = Math.sin(angleStep);
+                const px = pos[i3], pz = pos[i3 + 2];
                 pos[i3] = px * cosA - pz * sinA;
                 pos[i3 + 2] = px * sinA + pz * cosA;
-            
                 pos[i3] += Math.sin(elapsed * 0.15 + i * 0.001) * 0.0008;
                 pos[i3 + 1] += Math.cos(elapsed * 0.12 + i * 0.0013) * 0.0008;
                 pos[i3 + 2] += Math.sin(elapsed * 0.14 + i * 0.0017) * 0.0008;
-            
                 const r = Math.sqrt(pos[i3] * pos[i3] + pos[i3 + 1] * pos[i3 + 1] + pos[i3 + 2] * pos[i3 + 2]);
-                if (r > spread * 1.9 || r < spread * 0.2) {
-                    pos[i3] *= 0.97;
-                    pos[i3 + 1] *= 0.97;
-                    pos[i3 + 2] *= 0.97;
-                }
+                if (r > spread * 1.9 || r < spread * 0.2) { pos[i3] *= 0.97; pos[i3 + 1] *= 0.97; pos[i3 + 2] *= 0.97; }
             }
             particleSystem.geometry.attributes.position.needsUpdate = true;
             particleSystem.rotation.y = elapsed * 0.02;
             particleSystem.rotation.x = Math.sin(elapsed * 0.01 + seedChaos) * 0.12;
-        
-            for (const ring of rings) {
-                const { rotSpeedX, rotSpeedY, rotSpeedZ, orbitSpeed, orbitRadius, phase, mat, baseColor, invert, bright, hueSpeed, hueOffset } = ring.userData;
 
+            for (const ring of rings) {
+                const { rotSpeedX, rotSpeedY, rotSpeedZ, orbitSpeed, orbitRadius, phase, mat, bright } = ring.userData;
                 ring.rotation.x += rotSpeedX * 0.02;
                 ring.rotation.y += rotSpeedY * 0.02;
                 ring.rotation.z += rotSpeedZ * 0.02;
-
                 const a = elapsed * orbitSpeed + phase;
                 ring.position.x = Math.cos(a) * (orbitRadius + Math.sin(elapsed * 0.3 + phase) * 0.5) + Math.sin(elapsed * 0.25 + phase) * 0.3;
                 ring.position.z = Math.sin(a) * (orbitRadius + Math.cos(elapsed * 0.3 + phase) * 0.5) + Math.cos(elapsed * 0.35 + phase) * 0.3;
                 ring.position.y = Math.sin(elapsed * 0.4 + phase) * 0.6 + Math.cos(elapsed * 0.25 + phase) * 0.3;
-
-                const sc = 1 + 0.25 * Math.sin(elapsed * 0.6 + phase) * pulseFactor;
+                const sc = (1 + 0.25 * Math.sin(elapsed * 0.6 + phase) * pulseFactor) * kickScale;
                 ring.scale.set(sc, sc, sc);
-            
-                const hue = (hueOffset + elapsed * hueSpeed) % 1;
-                const sat = 0.85 + 0.15 * Math.sin(elapsed * 0.4 + phase);
-                const light = Math.min(0.65, bright * 0.65);
-                const col = new THREE.Color().setHSL(hue, sat, light);
-
-                if (invert) {
-                    mat.color.setRGB(1 - col.r, 1 - col.g, 1 - col.b);
-                } else {
-                    mat.color.copy(col);
-                }
+                mat.color.setScalar(bright * (0.7 + 0.3 * Math.sin(elapsed * 0.4 + phase)));
             }
-        
-            const cloudPos = (elapsed * 60.0) % 8000;
-            cloudMesh.position.z = -cloudPos + 4000;
-            cloudMesh2.position.z = -cloudPos + 2000;
-        
-            bloomPass.strength = 0.18 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 0.08 + seedChaos)) * pulseFactor;
-        
+
+            bloomPass.strength = (0.18 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 0.08 + seedChaos)) * pulseFactor) * ml(0.75, 1.0) + kick * 0.6;
+
             composer.render();
+            if (!bootDone) { bootDone = true; BOOT.done(); }        // first real frame is on screen: let the boot screen go
             requestAnimationFrame(animate);
         }
 
+        BOOT.stage(92, 'COMPILING', 'GPU', 'berry skin  ·  duotone  ·  bloom  ·  afterimage');
         animate();
 
         function onResize() {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
+            const w = container.clientWidth, h = container.clientHeight;
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
@@ -1628,27 +2097,17 @@
             updateSeedDisplay();
         }
         window.addEventListener('resize', onResize);
-        if (window.ResizeObserver) {
-            const ro = new ResizeObserver(() => onResize());
-            ro.observe(container);
-        }
+        if (window.ResizeObserver) { new ResizeObserver(() => onResize()).observe(container); }
 
-        window.__CHAOS = {
-            seed: SEED_RAW,
-            seed64: seed64,
-            visitorCount: visitorCount,
-            scene: scene,
-            camera: camera,
-            renderer: renderer,
-            composer: composer,
-            controls: controls,
-        };
+        window.__CHAOS = { seed: SEED_RAW, seed64, visitorCount, scene, camera, renderer, composer, controls, palette, mood, cycleMood, mutation, skin, shapeType, vertCount, mainMesh, mainRadius, satellites, rings, foldGroups, geometricShapes, particleSystem, wireMesh };
 
         console.log('CHAOS ready. Visitors:', visitorCount);
         console.log('Seed:', SEED_RAW);
-        console.log('Geometry type:', geoParams.type);
+        console.log('Shape type:', shapeType, 'of', SHAPE_COUNT, 'verts:', vertCount, 'radius:', mainRadius.toFixed(2));
+        console.log('Lineage:', lineage.join(' → '), '| mutation rate:', mutation.rate.toFixed(4));
         console.log('Chaos factor:', motion.chaosFactor);
-        console.log('Light position:', lightPos.x.toFixed(2), lightPos.y.toFixed(2), lightPos.z.toFixed(2));
+        console.log('Mood:', moodName(mood.v), mood.v.toFixed(2), mood.locked ? '(locked by URL)' : '(seeded)');
+        console.log('Palette A/B:', '#' + palette.a.getHexString(), '#' + palette.b.getHexString());
     </script>
 </body>
 </html>
