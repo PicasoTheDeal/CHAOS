@@ -1,5 +1,7 @@
 # CHAOS
 
+![CHAOS boot poster](assets/preview.jpg)
+
 What is this? IDK but more like self-contained Three.js web application manifested into a 
 single `index.html` file that rips open a completely unique 3D visual dimension every single time reality 
 reboots it. 
